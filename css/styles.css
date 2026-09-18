@@ -543,3 +543,173 @@ header {
   color: #4ade80;
   cursor: default;
 }
+
+/* ==========================================
+   ESTILOS: REORDENAR SÍLABAS (SCRAMBLE)
+   ========================================== */
+.scramble-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  text-align: center;
+}
+
+.scramble-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.scramble-streak {
+  background: #232834;
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.scramble-card {
+  background: #12151c;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.scramble-meaning {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-transform: capitalize;
+}
+
+.scramble-category-badge {
+  font-size: 0.75rem;
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 3px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Casillas de destino */
+.scramble-slots {
+  display: flex;
+  gap: 8px;
+  min-height: 52px;
+  padding: 6px;
+  background: #181c24;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 360px;
+}
+
+.scramble-slots.correct {
+  border-color: var(--correct-border);
+  background: var(--correct-bg);
+}
+
+.scramble-slots.wrong {
+  border-color: var(--wrong-border);
+  background: var(--wrong-bg);
+  animation: shake 0.3s ease;
+}
+
+/* Fichas de Sílabas */
+.scramble-chip {
+  min-width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  background: #232834;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-main);
+  font-size: 1.3rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.scramble-chip:hover {
+  background: var(--btn-hover);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.scramble-chip.in-slot {
+  background: #272f3f;
+  border-color: var(--accent);
+  color: #38bdf8;
+}
+
+.scramble-chip.disabled {
+  opacity: 0.25;
+  pointer-events: none;
+  border-style: dashed;
+}
+
+/* Fichas disponibles abajo */
+.scramble-pool {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-height: 50px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.scramble-feedback {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--gold);
+}
+
+.scramble-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.btn-icon-action {
+  flex: 1;
+  background: #232834;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-icon-action:hover {
+  background: var(--btn-hover);
+  color: #fff;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
