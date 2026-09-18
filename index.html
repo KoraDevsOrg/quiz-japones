@@ -25,11 +25,10 @@
 
   <main class="container">
     <!-- MÓDULO 1: CUESTIONARIO -->
-        <!-- MÓDULO 1: CUESTIONARIO -->
     <section class="quiz-card" id="quizSection">
-      <!-- Barra de controles del Quiz: Categoría y Ocultar Rōmaji -->
+      <!-- Barra de controles del Quiz -->
       <div class="quiz-toolbar">
-        <div class="category-wrapper">
+        <div class="toolbar-item">
           <label for="categorySelect">Categoría:</label>
           <select id="categorySelect" class="styled-select">
             <option value="all">Todas (130 📚)</option>
@@ -47,6 +46,15 @@
           </select>
         </div>
 
+        <div class="toolbar-item">
+          <label for="modeSelect">Modo:</label>
+          <select id="modeSelect" class="styled-select">
+            <option value="jp-es">🇯🇵 ➔ 🇪🇸</option>
+            <option value="es-jp">🇪🇸 ➔ 🇯🇵</option>
+            <option value="mixed">🔀 Mixto</option>
+          </select>
+        </div>
+
         <button id="btnToggleRomaji" class="toggle-romaji-btn" title="Ocultar/Mostrar Rōmaji">
           👁️ Rōmaji: <span id="romajiStatus">ON</span>
         </button>
@@ -55,8 +63,8 @@
       <div class="question-header">
         <span class="star-icon" aria-hidden="true">🌟</span>
         <div>
-          <h2 class="question-title">
-            ¿Qué significa <span class="jp-highlight" id="wordJp">...</span> <span id="romajiWrapper">(<span id="wordRomaji">...</span>)</span>?
+          <h2 class="question-title" id="questionTitleContainer">
+            <!-- Título dinámico generado por quiz.js -->
           </h2>
           <button class="audio-btn" id="btnPlayAudio">🔊 Escuchar pronunciación</button>
         </div>
@@ -71,7 +79,6 @@
 
       <button class="action-btn" id="nextBtn" style="display: none;">Siguiente pregunta ➔</button>
     </section>
-
 
     <!-- MÓDULO 2: SOPA DE LETRAS -->
     <section class="wordsearch-card" id="wsSection" style="display: none;">
