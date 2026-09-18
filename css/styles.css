@@ -375,3 +375,50 @@ header {
   display: none !important;
 }
 
+/* Botón de Repaso de Errores */
+.btn-review {
+  background: #232834;
+  border: 1px solid #eab308;
+  color: #facc15;
+  padding: 5px 9px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-review:hover {
+  background: rgba(234, 179, 8, 0.15);
+}
+
+.btn-review.active {
+  background: #eab308;
+  color: #000;
+  border-color: #facc15;
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.4);
+}
+
+.btn-review:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+/* Banner de Modo Repaso */
+.review-badge-banner {
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px dashed #eab308;
+  color: #fde047;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  margin-bottom: 14px;
+  display: none;
+  text-align: center;
+}
+
