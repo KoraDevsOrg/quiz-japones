@@ -4,6 +4,7 @@ import { AudioService } from "./services/audio.js";
 import { QuizModule } from "./modules/quiz.js";
 import { WordSearchModule } from "./modules/wordsearch.js";
 import { MemoryModule } from "./modules/memory.js";
+import { ScrambleModule } from "./modules/scramble.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   // 1. Inicializar Servicios
@@ -39,12 +40,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const quiz = new QuizModule(WORDS_DATA, StorageService, audioService, renderStats);
   const wordSearch = new WordSearchModule(WORDS_DATA, audioService);
   const memory = new MemoryModule(WORDS_DATA, audioService);
+  const scramble = new ScrambleModule(WORDS_DATA, audioService);
 
   // 4. Gestión Centralizada de Pestañas
   const tabs = [
     { btn: document.getElementById("tabQuiz"), section: document.getElementById("quizSection"), onActive: null },
     { btn: document.getElementById("tabWordSearch"), section: document.getElementById("wsSection"), onActive: () => wordSearch.generate() },
-    { btn: document.getElementById("tabMemory"), section: document.getElementById("memorySection"), onActive: () => memory.startNewGame() }
+    { btn: document.getElementById("tabMemory"), section: document.getElementById("memorySection"), onActive: () => memory.startNewGame() },
+    { btn: document.getElementById("tabScramble"), section: document.getElementById("scrambleSection"), onActive: () => scramble.nextWord() }
   ];
 
   function setActiveTab(activeTab) {
@@ -62,6 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
     tab.btn.addEventListener("click", () => setActiveTab(tab));
   });
 
-  // Arrancar primera pregunta del quiz
+  // Iniciar con la primera pregunta del Quiz
   quiz.nextQuestion();
 });
