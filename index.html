@@ -3,597 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aprende Japonés - Retos & Quiz</title>
-  <style>
-    :root {
-      --bg: #0f1115;
-      --card-bg: #181c24;
-      --border: #2d3342;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --gold: #facc15;
-      --correct-bg: rgba(34, 197, 94, 0.15);
-      --correct-border: #22c55e;
-      --wrong-bg: rgba(239, 68, 68, 0.15);
-      --wrong-border: #ef4444;
-      --btn-hover: #262c3a;
-      --accent: #38bdf8;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 15px 12px;
-    }
-
-    header { width: 100%; max-width: 480px; margin-bottom: 16px; }
-
-    .nav-tabs {
-      display: flex;
-      gap: 8px;
-      background: var(--card-bg);
-      padding: 6px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
-
-    .nav-btn {
-      flex: 1;
-      padding: 10px;
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .nav-btn.active { background: #272f3f; color: #fff; }
-
-    .stats-bar {
-      display: flex;
-      justify-content: space-around;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 8px;
-      margin-top: 10px;
-      font-size: 0.85rem;
-    }
-
-    .stat-item span { font-weight: bold; color: var(--gold); }
-    .container { width: 100%; max-width: 480px; }
-
-    /* Tarjeta del Cuestionario */
-    .quiz-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-    }
-
-    .question-title {
-      font-size: 1.25rem;
-      line-height: 1.4;
-      font-weight: 600;
-      margin-bottom: 18px;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-    }
-
-    .star-icon { color: var(--gold); font-size: 1.3rem; }
-    .jp-highlight { color: #ffffff; font-weight: 700; border-bottom: 2px dashed var(--gold); }
-
-    .audio-btn {
-      background: #252b38;
-      border: 1px solid var(--border);
-      color: var(--accent);
-      border-radius: 20px;
-      padding: 5px 12px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 10px;
-    }
-
-    .options-list { display: flex; flex-direction: column; gap: 10px; }
-
-    .option-btn {
-      background: transparent;
-      border: 1.5px solid var(--border);
-      color: var(--text-main);
-      padding: 14px 16px;
-      border-radius: 12px;
-      font-size: 1.05rem;
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .option-btn:hover:not([disabled]) { background: var(--btn-hover); border-color: #4b5563; }
-    .option-btn.correct { background: var(--correct-bg) !important; border-color: var(--correct-border) !important; color: #4ade80 !important; font-weight: bold; }
-    .option-btn.wrong { background: var(--wrong-bg) !important; border-color: var(--wrong-border) !important; color: #f87171 !important; text-decoration: line-through; }
-
-    .explanation-box {
-      margin-top: 18px;
-      padding: 14px;
-      border-radius: 10px;
-      background: #11141c;
-      display: none;
-      animation: fadeIn 0.25s ease;
-    }
-
-    .explanation-box.correct-exp { border-left: 4px solid var(--correct-border); }
-    .explanation-box.wrong-exp { border-left: 4px solid var(--wrong-border); }
-    .exp-status { font-weight: bold; margin-bottom: 5px; font-size: 0.95rem; }
-    .exp-body { font-size: 0.9rem; color: #d1d5db; line-height: 1.45; }
-
-    .action-btn {
-      width: 100%;
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 12px;
-      background: var(--gold);
-      color: #000;
-      font-size: 0.95rem;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-    }
-
-    /* Tarjeta de Sopa de Letras */
-    .wordsearch-card {
-      display: none;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px;
-      text-align: center;
-    }
-
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 6px;
-      margin: 16px auto;
-      max-width: 320px;
-      user-select: none;
-    }
-
-    .cell {
-      aspect-ratio: 1;
-      background: #232834;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    .cell.selected { background: var(--accent); color: #000; }
-    .cell.found { background: #22c55e; color: #000; }
-
-    .word-targets { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
-    .target-tag { background: #212631; border: 1px solid var(--border); padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
-    .target-tag.done { text-decoration: line-through; color: #6b7280; border-color: #22c55e; background: rgba(34, 197, 94, 0.1); }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+  <title>Aprende Japonés - KoraDevs</title>
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
   <header>
-    <div class="nav-tabs">
-      <button class="nav-btn active" id="tabQuiz" onclick="switchView('quiz')">🌟 Cuestionario</button>
-      <button class="nav-btn" id="tabWordSearch" onclick="switchView('wordsearch')">🔍 Sopa de Letras</button>
-    </div>
+    <nav class="nav-tabs" role="tablist">
+      <button class="nav-btn active" id="tabQuiz" role="tab" aria-selected="true">🌟 Cuestionario</button>
+      <button class="nav-btn" id="tabWordSearch" role="tab" aria-selected="false">🔍 Sopa de Letras</button>
+    </nav>
 
-    <div class="stats-bar">
+    <section class="stats-bar" aria-label="Estadísticas de aprendizaje">
       <div class="stat-item">Aciertos: <span id="scoreText">0</span></div>
       <div class="stat-item">Racha: <span id="streakText">0 🔥</span></div>
-      <div class="stat-item">Vocabulario: <span id="vocabCount">130 📚</span></div>
-    </div>
+      <div class="stat-item">Récord: <span id="bestStreakText">0 🏆</span></div>
+      <div class="stat-item">Banco: <span id="vocabCount">0 📚</span></div>
+      <button id="btnResetStats" class="btn-icon" title="Reiniciar estadísticas">↺</button>
+    </section>
   </header>
 
   <main class="container">
-    <!-- SECCIÓN CUESTIONARIO -->
-    <div class="quiz-card" id="quizSection">
-      <div class="question-title">
-        <span class="star-icon">🌟</span>
+    <!-- MÓDULO 1: CUESTIONARIO -->
+    <section class="quiz-card" id="quizSection">
+      <div class="question-header">
+        <span class="star-icon" aria-hidden="true">🌟</span>
         <div>
-          ¿Qué significa <span class="jp-highlight" id="wordJp">...</span> (<span id="wordRomaji">...</span>)?
-          <br>
-          <button class="audio-btn" onclick="playAudio()">🔊 Escuchar pronunciación</button>
+          <h2 class="question-title">
+            ¿Qué significa <span class="jp-highlight" id="wordJp">...</span> (<span id="wordRomaji">...</span>)?
+          </h2>
+          <button class="audio-btn" id="btnPlayAudio">🔊 Escuchar pronunciación</button>
         </div>
       </div>
 
-      <div class="options-list" id="optionsContainer"></div>
+      <div class="options-list" id="optionsContainer" role="group" aria-label="Opciones de respuesta"></div>
 
-      <div class="explanation-box" id="explanationBox">
+      <div class="explanation-box" id="explanationBox" aria-live="polite">
         <div class="exp-status" id="expStatus"></div>
         <div class="exp-body" id="expBody"></div>
       </div>
 
-      <button class="action-btn" id="nextBtn" style="display:none;" onclick="loadQuizQuestion()">Siguiente pregunta ➔</button>
-    </div>
+      <button class="action-btn" id="nextBtn" style="display: none;">Siguiente pregunta ➔</button>
+    </section>
 
-    <!-- SECCIÓN SOPA DE LETRAS -->
-    <div class="wordsearch-card" id="wsSection">
+    <!-- MÓDULO 2: SOPA DE LETRAS -->
+    <section class="wordsearch-card" id="wsSection" style="display: none;">
       <h3>🔍 Sopa de letras (Hiragana)</h3>
-      <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px;">
-        Toca las letras en orden para formar las palabras.
-      </p>
+      <p class="section-desc">Selecciona las sílabas en orden (horizontal o vertical) para formar las palabras.</p>
 
       <div class="grid-container" id="wsGrid"></div>
 
-      <h4 style="font-size: 0.9rem; margin-top: 10px;">Palabras ocultas:</h4>
+      <h4>Palabras ocultas:</h4>
       <div class="word-targets" id="wsTargets"></div>
 
-      <button class="action-btn" style="margin-top: 16px;" onclick="initWordSearch()">
+      <button class="action-btn" id="btnResetWS" style="margin-top: 18px;">
         🔄 Nueva sopa de letras
       </button>
-    </div>
+    </section>
   </main>
 
-  <script>
-    // BANCO MASIVO BILINGÜE (130 PALABRAS JLPT N5 EN INGLÉS Y ESPAÑOL)
-    const dictionary = [
-      { kana: "およぐ", romaji: "oyogu", kanji: "泳ぐ", meaning: "to swim / nadar" },
-      { kana: "たべる", romaji: "taberu", kanji: "食べる", meaning: "to eat / comer" },
-      { kana: "のむ", romaji: "nomu", kanji: "飲む", meaning: "to drink / beber" },
-      { kana: "ねる", romaji: "neru", kanji: "寝る", meaning: "to sleep / dormir" },
-      { kana: "おきる", romaji: "okiru", kanji: "起きる", meaning: "to wake up / despertar" },
-      { kana: "みる", romaji: "miru", kanji: "見る", meaning: "to see / mirar / ver" },
-      { kana: "きく", romaji: "kiku", kanji: "聞く", meaning: "to listen / escuchar" },
-      { kana: "いく", romaji: "iku", kanji: "行く", meaning: "to go / ir" },
-      { kana: "くる", romaji: "kuru", kanji: "来る", meaning: "to come / venir" },
-      { kana: "かえる", romaji: "kaeru", kanji: "帰る", meaning: "to return / volver" },
-      { kana: "はなす", romaji: "hanasu", kanji: "話す", meaning: "to speak / hablar" },
-      { kana: "かう", romaji: "kau", kanji: "買う", meaning: "to buy / comprar" },
-      { kana: "かく", romaji: "kaku", kanji: "書く", meaning: "to write / escribir" },
-      { kana: "よむ", romaji: "yomu", kanji: "読む", meaning: "to read / leer" },
-      { kana: "あるく", romaji: "aruku", kanji: "歩く", meaning: "to walk / caminar" },
-      { kana: "はしる", romaji: "hashiru", kanji: "走る", meaning: "to run / correr" },
-      { kana: "あそぶ", romaji: "asobu", kanji: "遊ぶ", meaning: "to play / jugar" },
-      { kana: "まつ", romaji: "matsu", kanji: "待つ", meaning: "to wait / esperar" },
-      { kana: "あう", romaji: "au", kanji: "会う", meaning: "to meet / encontrarse" },
-      { kana: "いう", romaji: "iu", kanji: "言う", meaning: "to say / decir" },
-      { kana: "わかる", romaji: "wakaru", kanji: "分かる", meaning: "to understand / entender" },
-      { kana: "べんきょうする", romaji: "benkyousuru", kanji: "勉強する", meaning: "to study / estudiar" },
-      { kana: "ねこ", romaji: "neko", kanji: "猫", meaning: "cat / gato" },
-      { kana: "いぬ", romaji: "inu", kanji: "犬", meaning: "dog / perro" },
-      { kana: "とり", romaji: "tori", kanji: "鳥", meaning: "bird / pájaro" },
-      { kana: "さかな", romaji: "sakana", kanji: "魚", meaning: "fish / pez / pescado" },
-      { kana: "うし", romaji: "ushi", kanji: "牛", meaning: "cow / vaca" },
-      { kana: "うま", romaji: "uma", kanji: "馬", meaning: "horse / caballo" },
-      { kana: "ぶた", romaji: "buta", kanji: "豚", meaning: "pig / cerdo" },
-      { kana: "さる", romaji: "saru", kanji: "猿", meaning: "monkey / mono" },
-      { kana: "くま", romaji: "kuma", kanji: "熊", meaning: "bear / oso" },
-      { kana: "みず", romaji: "mizu", kanji: "水", meaning: "water / agua" },
-      { kana: "おちゃ", romaji: "ocha", kanji: "お茶", meaning: "green tea / té verde" },
-      { kana: "ごはん", romaji: "gohan", kanji: "ご飯", meaning: "rice / meal / arroz / comida" },
-      { kana: "にく", romaji: "niku", kanji: "肉", meaning: "meat / carne" },
-      { kana: "やさい", romaji: "yasai", kanji: "野菜", meaning: "vegetable / verdura" },
-      { kana: "くだもの", romaji: "kudamono", kanji: "果物", meaning: "fruit / fruta" },
-      { kana: "たまご", romaji: "tamago", kanji: "卵", meaning: "egg / huevo" },
-      { kana: "りんご", romaji: "ringo", kanji: "林檎", meaning: "apple / manzana" },
-      { kana: "パン", romaji: "pan", kanji: "パン", meaning: "bread / pan" },
-      { kana: "ぎゅうにゅう", romaji: "gyuunyuu", kanji: "牛乳", meaning: "milk / leche" },
-      { kana: "あさごはん", romaji: "asagohan", kanji: "朝ご飯", meaning: "breakfast / desayuno" },
-      { kana: "ひるごはん", romaji: "hirugohan", kanji: "昼ご飯", meaning: "lunch / almuerzo" },
-      { kana: "ばんごはん", romaji: "bangohan", kanji: "晩ご飯", meaning: "dinner / cena" },
-      { kana: "ほん", romaji: "hon", kanji: "本", meaning: "book / libro" },
-      { kana: "くるま", romaji: "kuruma", kanji: "車", meaning: "car / auto / coche" },
-      { kana: "いえ", romaji: "ie", kanji: "家", meaning: "house / home / casa" },
-      { kana: "がっこう", romaji: "gakkou", kanji: "学校", meaning: "school / escuela" },
-      { kana: "えき", romaji: "eki", kanji: "駅", meaning: "train station / estación" },
-      { kana: "みち", romaji: "michi", kanji: "道", meaning: "street / road / calle / camino" },
-      { kana: "へや", romaji: "heya", kanji: "部屋", meaning: "room / habitación" },
-      { kana: "まち", romaji: "machi", kanji: "町", meaning: "town / city / ciudad" },
-      { kana: "みせ", romaji: "mise", kanji: "店", meaning: "shop / store / tienda" },
-      { kana: "とけい", romaji: "tokei", kanji: "時計", meaning: "watch / clock / reloj" },
-      { kana: "でんわ", romaji: "denwa", kanji: "電話", meaning: "phone / teléfono" },
-      { kana: "つくえ", romaji: "tsukue", kanji: "机", meaning: "desk / escritorio" },
-      { kana: "いす", romaji: "isu", kanji: "椅子", meaning: "chair / silla" },
-      { kana: "かぎ", romaji: "kagi", kanji: "鍵", meaning: "key / llave" },
-      { kana: "かばん", romaji: "kaban", kanji: "鞄", meaning: "bag / bolso / mochila" },
-      { kana: "おかね", romaji: "okane", kanji: "お金", meaning: "money / dinero" },
-      { kana: "きっぷ", romaji: "kippu", kanji: "切符", meaning: "ticket / billete / boleto" },
-      { kana: "じてんしゃ", romaji: "jitensha", kanji: "自転車", meaning: "bicycle / bicicleta" },
-      { kana: "でんしゃ", romaji: "densha", kanji: "電車", meaning: "train / tren" },
-      { kana: "ひこうき", romaji: "hikouki", kanji: "飛行機", meaning: "airplane / avión" },
-      { kana: "ともだち", romaji: "tomodachi", kanji: "友達", meaning: "friend / amigo" },
-      { kana: "ひと", romaji: "hito", kanji: "人", meaning: "person / persona" },
-      { kana: "せんせい", romaji: "sensei", kanji: "先生", meaning: "teacher / maestro" },
-      { kana: "がくせい", romaji: "gakusei", kanji: "学生", meaning: "student / estudiante" },
-      { kana: "かぞく", romaji: "kazoku", kanji: "家族", meaning: "family / familia" },
-      { kana: "ちち", romaji: "chichi", kanji: "父", meaning: "father / padre" },
-      { kana: "はは", romaji: "haha", kanji: "母", meaning: "mother / madre" },
-      { kana: "あに", romaji: "ani", kanji: "兄", meaning: "older brother / hermano mayor" },
-      { kana: "あね", romaji: "ane", kanji: "姉", meaning: "older sister / hermana mayor" },
-      { kana: "おとうと", romaji: "otouto", kanji: "弟", meaning: "younger brother / hermano menor" },
-      { kana: "いもうと", romaji: "imouto", kanji: "妹", meaning: "younger sister / hermana menor" },
-      { kana: "おとこのこ", romaji: "otokonoko", kanji: "男の子", meaning: "boy / niño" },
-      { kana: "おんなのこ", romaji: "onnanoko", kanji: "女の子", meaning: "girl / niña" },
-      { kana: "かわいい", romaji: "kawaii", kanji: "可愛い", meaning: "cute / pretty / lindo / tierno" },
-      { kana: "あつい", romaji: "atsui", kanji: "暑い / 熱い", meaning: "hot / caliente / caluroso" },
-      { kana: "さむい", romaji: "samui", kanji: "寒い", meaning: "cold (weather) / frío (clima)" },
-      { kana: "つめたい", romaji: "tsumetai", kanji: "冷たい", meaning: "cold to touch / frío al tacto" },
-      { kana: "おおきい", romaji: "ookii", kanji: "大きい", meaning: "big / large / grande" },
-      { kana: "ちいさい", romaji: "chiisai", kanji: "小さい", meaning: "small / little / pequeño" },
-      { kana: "たかい", romaji: "takai", kanji: "高い", meaning: "tall / expensive / alto / caro" },
-      { kana: "やすい", romaji: "yasui", kanji: "安い", meaning: "cheap / barato" },
-      { kana: "あたらしい", romaji: "atarashii", kanji: "新しい", meaning: "new / nuevo" },
-      { kana: "ふるい", romaji: "furui", kanji: "古い", meaning: "old / viejo" },
-      { kana: "いい", romaji: "ii", kanji: "良い", meaning: "good / bueno" },
-      { kana: "わるい", romaji: "warui", kanji: "悪い", meaning: "bad / malo" },
-      { kana: "すき", romaji: "suki", kanji: "好き", meaning: "liked / favorite / gustar" },
-      { kana: "きらい", romaji: "kirai", kanji: "嫌い", meaning: "disliked / disgustar / odiar" },
-      { kana: "おいしい", romaji: "oishii", kanji: "美味しい", meaning: "delicious / rico / delicioso" },
-      { kana: "はやい", romaji: "hayai", kanji: "早い / 速い", meaning: "fast / early / rápido / temprano" },
-      { kana: "おそい", romaji: "osoi", kanji: "遅い", meaning: "slow / late / lento / tarde" },
-      { kana: "むずかしい", romaji: "muzukashii", kanji: "難しい", meaning: "difficult / difícil" },
-      { kana: "やさしい", romaji: "yasashii", kanji: "易しい / 優しい", meaning: "easy / kind / fácil / amable" },
-      { kana: "あめ", romaji: "ame", kanji: "雨", meaning: "rain / lluvia" },
-      { kana: "ゆき", romaji: "yuki", kanji: "雪", meaning: "snow / nieve" },
-      { kana: "そら", romaji: "sora", kanji: "空", meaning: "sky / cielo" },
-      { kana: "やま", romaji: "yama", kanji: "山", meaning: "mountain / montaña" },
-      { kana: "かわ", romaji: "kawa", kanji: "川", meaning: "river / río" },
-      { kana: "うみ", romaji: "umi", kanji: "海", meaning: "sea / ocean / mar" },
-      { kana: "はな", romaji: "hana", kanji: "花", meaning: "flower / flor" },
-      { kana: "き", romaji: "ki", kanji: "木", meaning: "tree / wood / árbol / madera" },
-      { kana: "たいよう", romaji: "taiyou", kanji: "太陽", meaning: "sun / sol" },
-      { kana: "つき", romaji: "tsuki", kanji: "月", meaning: "moon / month / luna / mes" },
-      { kana: "あさ", romaji: "asa", kanji: "朝", meaning: "morning / mañana" },
-      { kana: "ひる", romaji: "hiru", kanji: "昼", meaning: "noon / daytime / mediodía / día" },
-      { kana: "よる", romaji: "yoru", kanji: "夜", meaning: "night / noche" },
-      { kana: "きょう", romaji: "kyou", kanji: "今日", meaning: "today / hoy" },
-      { kana: "きのう", romaji: "kinou", kanji: "昨日", meaning: "yesterday / ayer" },
-      { kana: "あした", romaji: "ashita", kanji: "明日", meaning: "tomorrow / mañana" },
-      { kana: "いま", romaji: "ima", kanji: "今", meaning: "now / ahora" },
-      { kana: "じかん", romaji: "jikan", kanji: "時間", meaning: "time / hour / tiempo / hora" },
-      { kana: "ありがとう", romaji: "arigatou", kanji: "有難う", meaning: "thank you / gracias" },
-      { kana: "おはよう", romaji: "ohayou", kanji: "お早う", meaning: "good morning / buenos días" },
-      { kana: "こんにちは", romaji: "konnichiwa", kanji: "今日は", meaning: "hello / hola" },
-      { kana: "こんばんは", romaji: "konbanwa", kanji: "今晩は", meaning: "good evening / buenas noches" },
-      { kana: "さようなら", romaji: "sayounara", kanji: "左様なら", meaning: "goodbye / adiós" },
-      { kana: "すみません", romaji: "sumimasen", kanji: "済みません", meaning: "excuse me / sorry / disculpe" },
-      { kana: "おねがいします", romaji: "onegaishimasu", kanji: "お願いします", meaning: "please / por favor" },
-      { kana: "はい", romaji: "hai", kanji: "はい", meaning: "yes / sí" },
-      { kana: "いいえ", romaji: "iie", kanji: "いいえ", meaning: "no / no" },
-      { kana: "どこ", romaji: "doko", kanji: "何処", meaning: "where? / ¿dónde?" },
-      { kana: "だれ", romaji: "dare", kanji: "誰", meaning: "who? / ¿quién?" },
-      { kana: "なに", romaji: "nani", kanji: "何", meaning: "what? / ¿qué?" },
-      { kana: "いつ", romaji: "itsu", kanji: "何時", meaning: "when? / ¿cuándo?" },
-      { kana: "どうして", romaji: "doushite", kanji: "如何して", meaning: "why? / ¿por qué?" },
-      { kana: "いくら", romaji: "ikura", kanji: "幾ら", meaning: "how much? / ¿cuánto cuesta?" }
-    ];
-
-    let currentQ = null;
-    let score = 0;
-    let streak = 0;
-    let answered = false;
-
-    const wordJpEl = document.getElementById("wordJp");
-    const wordRomajiEl = document.getElementById("wordRomaji");
-    const optionsContainer = document.getElementById("optionsContainer");
-    const expBox = document.getElementById("explanationBox");
-    const expStatus = document.getElementById("expStatus");
-    const expBody = document.getElementById("expBody");
-    const nextBtn = document.getElementById("nextBtn");
-
-    // GENERAR PREGUNTA ALEATORIA
-    function loadQuizQuestion() {
-      answered = false;
-      expBox.style.display = "none";
-      nextBtn.style.display = "none";
-      optionsContainer.innerHTML = "";
-
-      const target = dictionary[Math.floor(Math.random() * dictionary.length)];
-
-      const distractors = [];
-      while (distractors.length < 3) {
-        const rand = dictionary[Math.floor(Math.random() * dictionary.length)].meaning;
-        if (rand !== target.meaning && !distractors.includes(rand)) {
-          distractors.push(rand);
-        }
-      }
-
-      currentQ = {
-        jp: target.kana,
-        romaji: target.romaji,
-        kanji: target.kanji,
-        correct: target.meaning,
-        options: [...distractors, target.meaning].sort(() => Math.random() - 0.5)
-      };
-
-      wordJpEl.textContent = currentQ.jp;
-      wordRomajiEl.textContent = currentQ.romaji;
-
-      currentQ.options.forEach(opt => {
-        const btn = document.createElement("button");
-        btn.className = "option-btn";
-        btn.textContent = opt;
-        btn.onclick = () => verifyAnswer(opt, btn);
-        optionsContainer.appendChild(btn);
-      });
-    }
-
-    function verifyAnswer(selected, btnEl) {
-      if (answered) return;
-      answered = true;
-
-      const isCorrect = selected === currentQ.correct;
-      const allBtns = optionsContainer.querySelectorAll(".option-btn");
-
-      allBtns.forEach(b => {
-        b.disabled = true;
-        if (b.textContent === currentQ.correct) b.classList.add("correct");
-      });
-
-      if (isCorrect) {
-        score++;
-        streak++;
-        btnEl.classList.add("correct");
-        expStatus.innerHTML = "✅ ¡Correcto!";
-        expStatus.style.color = "#4ade80";
-        expBox.className = "explanation-box correct-exp";
-      } else {
-        streak = 0;
-        btnEl.classList.add("wrong");
-        expStatus.innerHTML = `❌ Incorrecto`;
-        expStatus.style.color = "#f87171";
-        expBox.className = "explanation-box wrong-exp";
-      }
-
-      document.getElementById("scoreText").textContent = score;
-      document.getElementById("streakText").textContent = `${streak} 🔥`;
-
-      let kanjiInfo = (currentQ.kanji && currentQ.kanji !== currentQ.jp) ? `<br>Escritura Kanji: <b>${currentQ.kanji}</b>.` : "";
-      expBody.innerHTML = `<b>${currentQ.jp}</b> (${currentQ.romaji}) significa: <i>${currentQ.correct}</i>.${kanjiInfo}`;
-
-      expBox.style.display = "block";
-      nextBtn.style.display = "block";
-    }
-
-    function playAudio() {
-      if (!currentQ || !('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(currentQ.jp);
-      u.lang = 'ja-JP';
-      u.rate = 0.8;
-      window.speechSynthesis.speak(u);
-    }
-
-    // SOPA DE LETRAS DINÁMICA
-    let currentSelection = [];
-    let foundWords = [];
-    let activePuzzleWords = [];
-
-    function initWordSearch() {
-      const gridEl = document.getElementById("wsGrid");
-      const targetsEl = document.getElementById("wsTargets");
-      gridEl.innerHTML = "";
-      targetsEl.innerHTML = "";
-      currentSelection = [];
-      foundWords = [];
-
-      // Selecciona 4 palabras cortas (2 a 3 caracteres) de la lista de 130
-      const candidates = dictionary.filter(w => w.kana.length >= 2 && w.kana.length <= 3);
-      activePuzzleWords = [...candidates].sort(() => Math.random() - 0.5).slice(0, 4);
-
-      activePuzzleWords.forEach(w => {
-        const tag = document.createElement("div");
-        tag.className = "target-tag";
-        tag.id = `ws-${w.kana}`;
-        tag.innerHTML = `<b>${w.kana}</b> (${w.meaning})`;
-        targetsEl.appendChild(tag);
-      });
-
-      const size = 6;
-      let board = Array(size).fill(null).map(() => Array(size).fill(''));
-      const fillers = ["あ", "か", "さ", "た", "な", "は", "ま", "や", "ら", "わ", "き", "し", "ち", "に", "り", "て", "こ"];
-
-      activePuzzleWords.forEach((item, rIdx) => {
-        const word = item.kana;
-        const row = rIdx + 1;
-        const maxStart = size - word.length;
-        const colStart = Math.floor(Math.random() * (maxStart + 1));
-        for (let i = 0; i < word.length; i++) {
-          board[row][colStart + i] = word[i];
-        }
-      });
-
-      for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-          if (!board[r][c]) {
-            board[r][c] = fillers[Math.floor(Math.random() * fillers.length)];
-          }
-        }
-      }
-
-      for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-          const cell = document.createElement("div");
-          cell.className = "cell";
-          cell.textContent = board[r][c];
-          cell.onclick = () => handleCellClick(cell);
-          gridEl.appendChild(cell);
-        }
-      }
-    }
-
-    function handleCellClick(cell) {
-      if (cell.classList.contains("found")) return;
-
-      if (cell.classList.contains("selected")) {
-        cell.classList.remove("selected");
-        currentSelection = currentSelection.filter(c => c !== cell);
-      } else {
-        cell.classList.add("selected");
-        currentSelection.push(cell);
-      }
-
-      const formed = currentSelection.map(c => c.textContent).join("");
-      const matched = activePuzzleWords.find(w => w.kana === formed);
-
-      if (matched && !foundWords.includes(matched.kana)) {
-        foundWords.push(matched.kana);
-        currentSelection.forEach(c => {
-          c.classList.remove("selected");
-          c.classList.add("found");
-        });
-        document.getElementById(`ws-${matched.kana}`).classList.add("done");
-        currentSelection = [];
-
-        if (foundWords.length === activePuzzleWords.length) {
-          setTimeout(() => alert("🎉 ¡Encontraste todas las palabras!"), 200);
-        }
-      }
-    }
-
-    // CAMBIO DE PESTAÑAS
-    function switchView(tab) {
-      const quizSection = document.getElementById("quizSection");
-      const wsSection = document.getElementById("wsSection");
-      const tabQuiz = document.getElementById("tabQuiz");
-      const tabWordSearch = document.getElementById("tabWordSearch");
-
-      if (tab === 'quiz') {
-        quizSection.style.display = "block";
-        wsSection.style.display = "none";
-        tabQuiz.classList.add("active");
-        tabWordSearch.classList.remove("active");
-      } else {
-        quizSection.style.display = "none";
-        wsSection.style.display = "block";
-        tabQuiz.classList.remove("active");
-        tabWordSearch.classList.add("active");
-        initWordSearch();
-      }
-    }
-
-    // Iniciar con la primera pregunta
-    loadQuizQuestion();
-  </script>
+  <!-- Script principal cargado como módulo ES6 -->
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
