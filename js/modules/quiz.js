@@ -8,8 +8,9 @@ export class QuizModule {
 
     this.currentQ = null;
     this.answered = false;
+    this.isReviewMode = false;
 
-    // Persistencia de preferencias
+    // Preferencias
     this.showRomaji = localStorage.getItem("koradevs_show_romaji") !== "false";
     this.quizMode = localStorage.getItem("koradevs_quiz_mode") || "jp-es";
 
@@ -19,6 +20,9 @@ export class QuizModule {
     this.btnToggleRomaji = document.getElementById("btnToggleRomaji");
     this.categorySelect = document.getElementById("categorySelect");
     this.modeSelect = document.getElementById("modeSelect");
+    this.btnReviewMistakes = document.getElementById("btnReviewMistakes");
+    this.mistakesCount = document.getElementById("mistakesCount");
+    this.reviewBanner = document.getElementById("reviewBanner");
 
     this.optionsContainer = document.getElementById("optionsContainer");
     this.expBox = document.getElementById("explanationBox");
@@ -29,6 +33,7 @@ export class QuizModule {
 
     this.modeSelect.value = this.quizMode;
     this._updateRomajiUI();
+    this._updateMistakesCountUI();
     this._bindEvents();
   }
 
@@ -38,30 +43,48 @@ export class QuizModule {
       if (this.currentQ) this.audio.speakJapanese(this.currentQ.targetWord.kana);
     });
 
-    // Cambiar visibilidad de Rōmaji
+    // Control de Rōmaji
     this.btnToggleRomaji.addEventListener("click", () => {
       this.showRomaji = !this.showRomaji;
       localStorage.setItem("koradevs_show_romaji", this.showRomaji);
       this._updateRomajiUI();
-      // Si la pregunta actual está activa y es ES -> JP, refresca las etiquetas
       if (this.currentQ && this.currentQ.direction === "es-jp" && !this.answered) {
         this._renderCurrentOptions();
       }
     });
 
-    // Cambiar Categoría
+    // Control de Categorías
     this.categorySelect.addEventListener("change", (e) => {
       const selected = e.target.value;
       this.filteredWords = selected === "all" 
         ? [...this.allWords] 
         : this.allWords.filter(w => w.cat === selected);
+      
+      if (this.isReviewMode) this._exitReviewMode();
       this.nextQuestion();
     });
 
-    // Cambiar Modo de Dirección
+    // Control de Dirección
     this.modeSelect.addEventListener("change", (e) => {
       this.quizMode = e.target.value;
       localStorage.setItem("koradevs_quiz_mode", this.quizMode);
+      this.nextQuestion();
+    });
+
+    // Modo Repaso de Errores
+    this.btnReviewMistakes.addEventListener("click", () => {
+      const mistakes = this.storage.getMistakes();
+      if (mistakes.length === 0 && !this.isReviewMode) {
+        alert("🎉 ¡No tienes errores pendientes por repasar! Sigue practicando normalmente.");
+        return;
+      }
+
+      this.isReviewMode = !this.isReviewMode;
+      if (this.isReviewMode) {
+        this._enterReviewMode();
+      } else {
+        this._exitReviewMode();
+      }
       this.nextQuestion();
     });
 
@@ -80,9 +103,29 @@ export class QuizModule {
     });
   }
 
+  _enterReviewMode() {
+    this.isReviewMode = true;
+    this.btnReviewMistakes.classList.add("active");
+    this.reviewBanner.style.display = "block";
+    this.categorySelect.disabled = true;
+  }
+
+  _exitReviewMode() {
+    this.isReviewMode = false;
+    this.btnReviewMistakes.classList.remove("active");
+    this.reviewBanner.style.display = "none";
+    this.categorySelect.disabled = false;
+  }
+
   _updateRomajiUI() {
     this.romajiStatus.textContent = this.showRomaji ? "ON" : "OFF";
     this.btnToggleRomaji.classList.toggle("off", !this.showRomaji);
+  }
+
+  _updateMistakesCountUI() {
+    const count = this.storage.getMistakes().length;
+    this.mistakesCount.textContent = count;
+    this.btnReviewMistakes.disabled = count === 0 && !this.isReviewMode;
   }
 
   nextQuestion() {
@@ -91,17 +134,30 @@ export class QuizModule {
     this.nextBtn.style.display = "none";
     this.optionsContainer.innerHTML = "";
 
-    // 1. Determinar dirección de la pregunta
+    // 1. Determinar el banco de palabras objetivo
+    let pool = [];
+    if (this.isReviewMode) {
+      const mistakeKanas = this.storage.getMistakes();
+      if (mistakeKanas.length === 0) {
+        alert("🌟 ¡Excelente trabajo! Has corregido todos tus errores.");
+        this._exitReviewMode();
+        pool = this.filteredWords.length > 0 ? this.filteredWords : this.allWords;
+      } else {
+        pool = this.allWords.filter(w => mistakeKanas.includes(w.kana));
+      }
+    } else {
+      pool = this.filteredWords.length > 0 ? this.filteredWords : this.allWords;
+    }
+
+    const target = pool[Math.floor(Math.random() * pool.length)];
+
+    // 2. Determinar dirección
     let direction = this.quizMode;
     if (direction === "mixed") {
       direction = Math.random() > 0.5 ? "jp-es" : "es-jp";
     }
 
-    // 2. Seleccionar palabra objetivo
-    const pool = this.filteredWords.length > 0 ? this.filteredWords : this.allWords;
-    const target = pool[Math.floor(Math.random() * pool.length)];
-
-    // 3. Obtener 3 distractores del banco general
+    // 3. Generar distractores del banco general
     const sameCat = this.allWords.filter(w => w.cat === target.cat && w.kana !== target.kana);
     const otherCat = this.allWords.filter(w => w.cat !== target.cat && w.kana !== target.kana);
     const candidatePool = [
@@ -125,23 +181,23 @@ export class QuizModule {
       rawOptions
     };
 
-    // 4. Configurar cabecera y audio según la dirección
+    // 4. Renderizar encabezado
     if (direction === "jp-es") {
       const romajiHtml = this.showRomaji ? ` (${target.romaji})` : "";
       this.questionTitleContainer.innerHTML = `¿Qué significa <span class="jp-highlight">${target.kana}</span>${romajiHtml}?`;
       this.audioBtn.style.display = "inline-flex";
     } else {
       this.questionTitleContainer.innerHTML = `¿Cómo se dice <span class="jp-highlight">${target.meaning}</span> en japonés?`;
-      // Ocultar audio antes de responder para no revelar la respuesta auditivamente
       this.audioBtn.style.display = "none";
     }
 
     this._renderCurrentOptions();
+    this._updateMistakesCountUI();
   }
 
   _renderCurrentOptions() {
     this.optionsContainer.innerHTML = "";
-    const { direction, targetWord, rawOptions } = this.currentQ;
+    const { direction, rawOptions } = this.currentQ;
 
     rawOptions.forEach((item, idx) => {
       let displayText = "";
@@ -182,8 +238,6 @@ export class QuizModule {
     });
 
     this.audio.playFeedback(isCorrect);
-
-    // Si estábamos en modo inverso, habilitamos el audio para oír cómo suena
     this.audioBtn.style.display = "inline-flex";
 
     const stats = this.storage.load();
@@ -199,16 +253,25 @@ export class QuizModule {
       this.expStatus.innerHTML = "✅ ¡Correcto!";
       this.expStatus.style.color = "#4ade80";
       this.expBox.className = "explanation-box correct-exp";
+
+      // Si estábamos repasando un error y acertó, se elimina de la lista de fallos
+      if (this.isReviewMode) {
+        this.storage.removeMistake(targetWord.kana);
+      }
     } else {
       stats.streak = 0;
       btnEl.classList.add("wrong");
-      this.expStatus.innerHTML = "❌ Incorrecto";
+      this.expStatus.innerHTML = "❌ Incorrecto (añadida a repaso)";
       this.expStatus.style.color = "#f87171";
       this.expBox.className = "explanation-box wrong-exp";
+
+      // Registrar como palabra fallada
+      this.storage.addMistake(targetWord.kana);
     }
 
     this.storage.save(stats);
     this.onStatsUpdate(stats);
+    this._updateMistakesCountUI();
 
     const kanjiPart = (targetWord.kanji && targetWord.kanji !== targetWord.kana)
       ? `<br>Escritura Kanji: <b>${targetWord.kanji}</b>.` : "";
