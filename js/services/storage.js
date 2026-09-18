@@ -1,4 +1,5 @@
 const STORAGE_KEY = "koradevs_nihongo_stats_v1";
+const MISTAKES_KEY = "koradevs_nihongo_mistakes_v1";
 
 const DEFAULT_STATE = {
   score: 0,
@@ -8,6 +9,7 @@ const DEFAULT_STATE = {
 };
 
 export class StorageService {
+  // --- Estadísticas Generales ---
   static load() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
@@ -28,9 +30,46 @@ export class StorageService {
   static reset() {
     try {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(MISTAKES_KEY);
     } catch (err) {
       console.warn("Error al reiniciar storage:", err);
     }
     return { ...DEFAULT_STATE };
+  }
+
+  // --- Gestión de Errores (Repetición Espaciada) ---
+  static getMistakes() {
+    try {
+      const data = localStorage.getItem(MISTAKES_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  static addMistake(kana) {
+    try {
+      const list = this.getMistakes();
+      if (!list.includes(kana)) {
+        list.push(kana);
+        localStorage.setItem(MISTAKES_KEY, JSON.stringify(list));
+      }
+      return list;
+    } catch (err) {
+      console.warn("Error guardando fallo:", err);
+      return [];
+    }
+  }
+
+  static removeMistake(kana) {
+    try {
+      let list = this.getMistakes();
+      list = list.filter(k => k !== kana);
+      localStorage.setItem(MISTAKES_KEY, JSON.stringify(list));
+      return list;
+    } catch (err) {
+      console.warn("Error eliminando fallo:", err);
+      return [];
+    }
   }
 }
