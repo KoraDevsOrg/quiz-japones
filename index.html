@@ -13,8 +13,8 @@
       <button class="nav-btn active" id="tabQuiz" role="tab" aria-selected="true">🌟 Cuestionario</button>
       <button class="nav-btn" id="tabWordSearch" role="tab" aria-selected="false">🔍 Sopa de Letras</button>
       <button class="nav-btn" id="tabMemory" role="tab" aria-selected="false">🎴 Memoria</button>
+      <button class="nav-btn" id="tabScramble" role="tab" aria-selected="false">🧩 Anagrama</button>
     </nav>
-
 
     <section class="stats-bar" aria-label="Estadísticas de aprendizaje">
       <div class="stat-item">Aciertos: <span id="scoreText">0</span></div>
@@ -121,6 +121,37 @@
         🔄 Nueva partida de memoria
       </button>
     </section>
+
+    <!-- MÓDULO 4: REORDENAR SÍLABAS (ANAGRAMA) -->
+    <section class="scramble-section" id="scrambleSection" style="display: none;">
+      <div class="scramble-header">
+        <div>
+          <h3>🧩 Ordena la Palabra</h3>
+          <p class="section-desc">Toca las sílabas en orden para formar la palabra correcta.</p>
+        </div>
+        <div class="scramble-streak">Racha: <span id="scrambleStreakText">0 🔥</span></div>
+      </div>
+
+      <!-- Tarjeta con el reto -->
+      <div class="scramble-card">
+        <div class="scramble-meaning" id="scrambleTargetMeaning">...</div>
+        <div class="scramble-category-badge" id="scrambleCategoryBadge">Categoría</div>
+
+        <!-- Casillas donde se van colocando las fichas seleccionadas -->
+        <div class="scramble-slots" id="scrambleSlots"></div>
+
+        <!-- Fichas disponibles para tocar -->
+        <div class="scramble-pool" id="scramblePool"></div>
+
+        <div class="scramble-feedback" id="scrambleFeedback" style="display: none;"></div>
+
+        <div class="scramble-actions">
+          <button class="btn-icon-action" id="btnScrambleClear" title="Reiniciar palabra">↺ Limpiar</button>
+          <button class="action-btn" id="btnScrambleNext" style="display: none; margin-top: 0;">Siguiente palabra ➔</button>
+        </div>
+      </div>
+    </section>
+    
     
   </main>
 
