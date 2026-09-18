@@ -58,14 +58,21 @@
         <button id="btnToggleRomaji" class="toggle-romaji-btn" title="Ocultar/Mostrar Rōmaji">
           👁️ Rōmaji: <span id="romajiStatus">ON</span>
         </button>
+
+        <button id="btnReviewMistakes" class="btn-review" title="Repasar palabras falladas">
+          ⚠️ Repaso (<span id="mistakesCount">0</span>)
+        </button>
+      </div>
+
+      <!-- Banner indicador cuando el modo repaso está activo -->
+      <div id="reviewBanner" class="review-badge-banner">
+        ⚠️ <b>Modo Repaso Activo:</b> Practicando palabras falladas. ¡Aciértalas para limpiarlas!
       </div>
 
       <div class="question-header">
         <span class="star-icon" aria-hidden="true">🌟</span>
         <div>
-          <h2 class="question-title" id="questionTitleContainer">
-            <!-- Título dinámico generado por quiz.js -->
-          </h2>
+          <h2 class="question-title" id="questionTitleContainer"></h2>
           <button class="audio-btn" id="btnPlayAudio">🔊 Escuchar pronunciación</button>
         </div>
       </div>
@@ -79,6 +86,7 @@
 
       <button class="action-btn" id="nextBtn" style="display: none;">Siguiente pregunta ➔</button>
     </section>
+    
 
     <!-- MÓDULO 2: SOPA DE LETRAS -->
     <section class="wordsearch-card" id="wsSection" style="display: none;">
