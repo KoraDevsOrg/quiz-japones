@@ -11,6 +11,7 @@
   --wrong-border: #ef4444;
   --btn-hover: #262c3a;
   --accent: #38bdf8;
+  --drawer-width: 280px;
 }
 
 * {
@@ -27,52 +28,245 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 12px;
+  padding: 0 12px 24px 12px;
 }
 
-header {
+/* ==========================================
+   BARRA SUPERIOR (APP BAR)
+   ========================================== */
+.app-bar {
   width: 100%;
   max-width: 480px;
-  margin-bottom: 16px;
-}
-
-.nav-tabs {
   display: flex;
-  gap: 8px;
-  background: var(--card-bg);
-  padding: 6px;
-  border-radius: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 6px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 100;
+}
+
+.btn-drawer-toggle {
+  background: #1e2430;
   border: 1px solid var(--border);
-}
-
-.nav-btn {
-  flex: 1;
-  padding: 10px;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  font-weight: 600;
-  border-radius: 8px;
+  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
 
-.nav-btn.active {
-  background: #272f3f;
+.btn-drawer-toggle .bar {
+  width: 20px;
+  height: 2px;
+  background-color: var(--text-main);
+  border-radius: 2px;
+  transition: 0.2s;
+}
+
+.btn-drawer-toggle:hover {
+  background: var(--btn-hover);
+  border-color: var(--accent);
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-title h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.app-logo {
+  font-size: 1.3rem;
+}
+
+.app-quick-stats {
+  background: #1e2430;
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: var(--gold);
+}
+
+/* ==========================================
+   MENÚ LATERAL RETRÁCTIL (DRAWER)
+   ========================================== */
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(3px);
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.drawer-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.side-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--drawer-width);
+  max-width: 85vw;
+  height: 100vh;
+  background: #141720;
+  border-right: 1px solid var(--border);
+  z-index: 999;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+}
+
+.side-drawer.open {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.drawer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.drawer-brand h2 {
+  font-size: 1.05rem;
+  font-weight: bold;
   color: #fff;
 }
 
+.drawer-brand p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.drawer-logo {
+  font-size: 1.6rem;
+}
+
+.btn-drawer-close {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-drawer-close:hover {
+  color: #fff;
+  background: var(--btn-hover);
+}
+
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 12px 14px;
+  border-radius: 12px;
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.drawer-item:hover {
+  background: #1d222e;
+}
+
+.drawer-item.active {
+  background: #232a3b;
+  border-color: var(--accent);
+}
+
+.drawer-icon {
+  font-size: 1.4rem;
+}
+
+.drawer-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.drawer-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.drawer-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ==========================================
+   BARRA DE ESTADÍSTICAS PERSISTENTES
+   ========================================== */
 .stats-bar {
+  width: 100%;
+  max-width: 480px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 8px 14px;
-  margin-top: 10px;
-  font-size: 0.82rem;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+  font-size: 0.8rem;
 }
 
 .stat-item span {
