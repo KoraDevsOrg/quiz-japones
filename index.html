@@ -8,27 +8,88 @@
 </head>
 <body>
 
-  <header>
-    <nav class="nav-tabs" role="tablist">
-      <button class="nav-btn active" id="tabQuiz" role="tab" aria-selected="true">🌟 Cuestionario</button>
-      <button class="nav-btn" id="tabWordSearch" role="tab" aria-selected="false">🔍 Sopa de Letras</button>
-      <button class="nav-btn" id="tabMemory" role="tab" aria-selected="false">🎴 Memoria</button>
-      <button class="nav-btn" id="tabScramble" role="tab" aria-selected="false">🧩 Anagrama</button>
+  <!-- BARRA SUPERIOR FIJA (APP BAR) -->
+  <header class="app-bar">
+    <button class="btn-drawer-toggle" id="btnOpenDrawer" aria-label="Abrir menú de juegos">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+    <div class="app-title">
+      <span class="app-logo">⛩️</span>
+      <h1 id="currentSectionTitle">Cuestionario</h1>
+    </div>
+    <div class="app-quick-stats">
+      <span id="headerStreakText">0 🔥</span>
+    </div>
+  </header>
+
+  <!-- MENÚ LATERAL RETRÁCTIL (DRAWER) -->
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <aside class="side-drawer" id="sideDrawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div class="drawer-brand">
+        <span class="drawer-logo">⛩️</span>
+        <div>
+          <h2>Kora Nihongo</h2>
+          <p>Modos de práctica</p>
+        </div>
+      </div>
+      <button class="btn-drawer-close" id="btnCloseDrawer" aria-label="Cerrar menú">✕</button>
+    </div>
+
+    <nav class="drawer-nav">
+      <button class="drawer-item active" data-target="quiz">
+        <span class="drawer-icon">🌟</span>
+        <div class="drawer-info">
+          <span class="drawer-label">Cuestionario</span>
+          <span class="drawer-sub">Preguntas de opción múltiple</span>
+        </div>
+      </button>
+
+      <button class="drawer-item" data-target="wordsearch">
+        <span class="drawer-icon">🔍</span>
+        <div class="drawer-info">
+          <span class="drawer-label">Sopa de Letras</span>
+          <span class="drawer-sub">Busca palabras en Hiragana</span>
+        </div>
+      </button>
+
+      <button class="drawer-item" data-target="memory">
+        <span class="drawer-icon">🎴</span>
+        <div class="drawer-info">
+          <span class="drawer-label">Parejas de Memoria</span>
+          <span class="drawer-sub">Tarjetas interactivas 3D</span>
+        </div>
+      </button>
+
+      <button class="drawer-item" data-target="scramble">
+        <span class="drawer-icon">🧩</span>
+        <div class="drawer-info">
+          <span class="drawer-label">Anagrama</span>
+          <span class="drawer-sub">Ordena las sílabas</span>
+        </div>
+      </button>
     </nav>
 
-    <section class="stats-bar" aria-label="Estadísticas de aprendizaje">
-      <div class="stat-item">Aciertos: <span id="scoreText">0</span></div>
-      <div class="stat-item">Racha: <span id="streakText">0 🔥</span></div>
-      <div class="stat-item">Récord: <span id="bestStreakText">0 🏆</span></div>
-      <div class="stat-item">Banco: <span id="vocabCount">0 📚</span></div>
-      <button id="btnResetStats" class="btn-icon" title="Reiniciar estadísticas">↺</button>
-    </section>
-  </header>
+    <div class="drawer-footer">
+      <p>Nivel JLPT N5 • 130 Palabras</p>
+    </div>
+  </aside>
+
+  <!-- BARRA DE ESTADÍSTICAS PERSISTENTES -->
+  <section class="stats-bar" aria-label="Estadísticas de aprendizaje">
+    <div class="stat-item">Aciertos: <span id="scoreText">0</span></div>
+    <div class="stat-item">Racha: <span id="streakText">0 🔥</span></div>
+    <div class="stat-item">Récord: <span id="bestStreakText">0 🏆</span></div>
+    <div class="stat-item">Banco: <span id="vocabCount">0 📚</span></div>
+    <button id="btnResetStats" class="btn-icon" title="Reiniciar estadísticas">↺</button>
+  </section>
 
   <main class="container">
     <!-- MÓDULO 1: CUESTIONARIO -->
-    <section class="quiz-card" id="quizSection">
-      <!-- Barra de controles del Quiz -->
+    <section class="quiz-card module-section" id="quizSection">
       <div class="quiz-toolbar">
         <div class="toolbar-item">
           <label for="categorySelect">Categoría:</label>
@@ -66,7 +127,6 @@
         </button>
       </div>
 
-      <!-- Banner indicador cuando el modo repaso está activo -->
       <div id="reviewBanner" class="review-badge-banner">
         ⚠️ <b>Modo Repaso Activo:</b> Practicando palabras falladas. ¡Aciértalas para limpiarlas!
       </div>
@@ -88,10 +148,9 @@
 
       <button class="action-btn" id="nextBtn" style="display: none;">Siguiente pregunta ➔</button>
     </section>
-    
 
     <!-- MÓDULO 2: SOPA DE LETRAS -->
-    <section class="wordsearch-card" id="wsSection" style="display: none;">
+    <section class="wordsearch-card module-section" id="wsSection" style="display: none;">
       <h3>🔍 Sopa de letras (Hiragana)</h3>
       <p class="section-desc">Selecciona las sílabas en orden (horizontal o vertical) para formar las palabras.</p>
 
@@ -106,7 +165,7 @@
     </section>
 
     <!-- MÓDULO 3: JUEGO DE MEMORIA -->
-    <section class="memory-card-section" id="memorySection" style="display: none;">
+    <section class="memory-card-section module-section" id="memorySection" style="display: none;">
       <div class="memory-header">
         <div>
           <h3>🎴 Parejas de Memoria</h3>
@@ -123,7 +182,7 @@
     </section>
 
     <!-- MÓDULO 4: REORDENAR SÍLABAS (ANAGRAMA) -->
-    <section class="scramble-section" id="scrambleSection" style="display: none;">
+    <section class="scramble-section module-section" id="scrambleSection" style="display: none;">
       <div class="scramble-header">
         <div>
           <h3>🧩 Ordena la Palabra</h3>
@@ -132,15 +191,11 @@
         <div class="scramble-streak">Racha: <span id="scrambleStreakText">0 🔥</span></div>
       </div>
 
-      <!-- Tarjeta con el reto -->
       <div class="scramble-card">
         <div class="scramble-meaning" id="scrambleTargetMeaning">...</div>
         <div class="scramble-category-badge" id="scrambleCategoryBadge">Categoría</div>
 
-        <!-- Casillas donde se van colocando las fichas seleccionadas -->
         <div class="scramble-slots" id="scrambleSlots"></div>
-
-        <!-- Fichas disponibles para tocar -->
         <div class="scramble-pool" id="scramblePool"></div>
 
         <div class="scramble-feedback" id="scrambleFeedback" style="display: none;"></div>
@@ -151,11 +206,8 @@
         </div>
       </div>
     </section>
-    
-    
   </main>
 
-  <!-- Script principal cargado como módulo ES6 -->
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
