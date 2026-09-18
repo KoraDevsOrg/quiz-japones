@@ -8,15 +8,17 @@ export class QuizModule {
 
     this.currentQ = null;
     this.answered = false;
+
+    // Persistencia de preferencias
     this.showRomaji = localStorage.getItem("koradevs_show_romaji") !== "false";
+    this.quizMode = localStorage.getItem("koradevs_quiz_mode") || "jp-es";
 
     // Elementos DOM
-    this.wordJpEl = document.getElementById("wordJp");
-    this.wordRomajiEl = document.getElementById("wordRomaji");
-    this.romajiWrapper = document.getElementById("romajiWrapper");
+    this.questionTitleContainer = document.getElementById("questionTitleContainer");
     this.romajiStatus = document.getElementById("romajiStatus");
     this.btnToggleRomaji = document.getElementById("btnToggleRomaji");
     this.categorySelect = document.getElementById("categorySelect");
+    this.modeSelect = document.getElementById("modeSelect");
 
     this.optionsContainer = document.getElementById("optionsContainer");
     this.expBox = document.getElementById("explanationBox");
@@ -25,6 +27,7 @@ export class QuizModule {
     this.nextBtn = document.getElementById("nextBtn");
     this.audioBtn = document.getElementById("btnPlayAudio");
 
+    this.modeSelect.value = this.quizMode;
     this._updateRomajiUI();
     this._bindEvents();
   }
@@ -32,24 +35,33 @@ export class QuizModule {
   _bindEvents() {
     this.nextBtn.addEventListener("click", () => this.nextQuestion());
     this.audioBtn.addEventListener("click", () => {
-      if (this.currentQ) this.audio.speakJapanese(this.currentQ.jp);
+      if (this.currentQ) this.audio.speakJapanese(this.currentQ.targetWord.kana);
     });
 
-    // Control de Rōmaji
+    // Cambiar visibilidad de Rōmaji
     this.btnToggleRomaji.addEventListener("click", () => {
       this.showRomaji = !this.showRomaji;
       localStorage.setItem("koradevs_show_romaji", this.showRomaji);
       this._updateRomajiUI();
+      // Si la pregunta actual está activa y es ES -> JP, refresca las etiquetas
+      if (this.currentQ && this.currentQ.direction === "es-jp" && !this.answered) {
+        this._renderCurrentOptions();
+      }
     });
 
-    // Control de Categorías
+    // Cambiar Categoría
     this.categorySelect.addEventListener("change", (e) => {
       const selected = e.target.value;
-      if (selected === "all") {
-        this.filteredWords = [...this.allWords];
-      } else {
-        this.filteredWords = this.allWords.filter(w => w.cat === selected);
-      }
+      this.filteredWords = selected === "all" 
+        ? [...this.allWords] 
+        : this.allWords.filter(w => w.cat === selected);
+      this.nextQuestion();
+    });
+
+    // Cambiar Modo de Dirección
+    this.modeSelect.addEventListener("change", (e) => {
+      this.quizMode = e.target.value;
+      localStorage.setItem("koradevs_quiz_mode", this.quizMode);
       this.nextQuestion();
     });
 
@@ -69,15 +81,8 @@ export class QuizModule {
   }
 
   _updateRomajiUI() {
-    if (this.showRomaji) {
-      this.romajiWrapper.classList.remove("hide-romaji");
-      this.romajiStatus.textContent = "ON";
-      this.btnToggleRomaji.classList.remove("off");
-    } else {
-      this.romajiWrapper.classList.add("hide-romaji");
-      this.romajiStatus.textContent = "OFF";
-      this.btnToggleRomaji.classList.add("off");
-    }
+    this.romajiStatus.textContent = this.showRomaji ? "ON" : "OFF";
+    this.btnToggleRomaji.classList.toggle("off", !this.showRomaji);
   }
 
   nextQuestion() {
@@ -86,65 +91,100 @@ export class QuizModule {
     this.nextBtn.style.display = "none";
     this.optionsContainer.innerHTML = "";
 
-    // 1. Elegir palabra objetivo del grupo filtrado
+    // 1. Determinar dirección de la pregunta
+    let direction = this.quizMode;
+    if (direction === "mixed") {
+      direction = Math.random() > 0.5 ? "jp-es" : "es-jp";
+    }
+
+    // 2. Seleccionar palabra objetivo
     const pool = this.filteredWords.length > 0 ? this.filteredWords : this.allWords;
     const target = pool[Math.floor(Math.random() * pool.length)];
 
-    // 2. Generar distractores del banco general
-    const sameCatWords = this.allWords.filter(w => w.cat === target.cat && w.meaning !== target.meaning);
-    const otherCatWords = this.allWords.filter(w => w.cat !== target.cat && w.meaning !== target.meaning);
-
-    const distractors = [];
-    const optionCandidates = [
-      ...sameCatWords.sort(() => Math.random() - 0.5),
-      ...otherCatWords.sort(() => Math.random() - 0.5)
+    // 3. Obtener 3 distractores del banco general
+    const sameCat = this.allWords.filter(w => w.cat === target.cat && w.kana !== target.kana);
+    const otherCat = this.allWords.filter(w => w.cat !== target.cat && w.kana !== target.kana);
+    const candidatePool = [
+      ...sameCat.sort(() => Math.random() - 0.5),
+      ...otherCat.sort(() => Math.random() - 0.5)
     ];
 
-    for (const item of optionCandidates) {
-      if (!distractors.includes(item.meaning)) {
-        distractors.push(item.meaning);
+    const distractors = [];
+    for (const w of candidatePool) {
+      if (!distractors.some(d => d.kana === w.kana)) {
+        distractors.push(w);
       }
       if (distractors.length >= 3) break;
     }
 
-    const options = [...distractors, target.meaning].sort(() => Math.random() - 0.5);
+    const rawOptions = [...distractors, target].sort(() => Math.random() - 0.5);
 
     this.currentQ = {
-      jp: target.kana,
-      romaji: target.romaji,
-      kanji: target.kanji,
-      correct: target.meaning,
-      options
+      direction,
+      targetWord: target,
+      rawOptions
     };
 
-    // Renderizar en UI
-    this.wordJpEl.textContent = this.currentQ.jp;
-    this.wordRomajiEl.textContent = this.currentQ.romaji;
+    // 4. Configurar cabecera y audio según la dirección
+    if (direction === "jp-es") {
+      const romajiHtml = this.showRomaji ? ` (${target.romaji})` : "";
+      this.questionTitleContainer.innerHTML = `¿Qué significa <span class="jp-highlight">${target.kana}</span>${romajiHtml}?`;
+      this.audioBtn.style.display = "inline-flex";
+    } else {
+      this.questionTitleContainer.innerHTML = `¿Cómo se dice <span class="jp-highlight">${target.meaning}</span> en japonés?`;
+      // Ocultar audio antes de responder para no revelar la respuesta auditivamente
+      this.audioBtn.style.display = "none";
+    }
 
-    this.currentQ.options.forEach((opt, idx) => {
+    this._renderCurrentOptions();
+  }
+
+  _renderCurrentOptions() {
+    this.optionsContainer.innerHTML = "";
+    const { direction, targetWord, rawOptions } = this.currentQ;
+
+    rawOptions.forEach((item, idx) => {
+      let displayText = "";
+      let matchValue = "";
+
+      if (direction === "jp-es") {
+        displayText = item.meaning;
+        matchValue = item.meaning;
+      } else {
+        const romajiPart = this.showRomaji ? ` (${item.romaji})` : "";
+        displayText = `${item.kana}${romajiPart}`;
+        matchValue = item.kana;
+      }
+
       const btn = document.createElement("button");
       btn.className = "option-btn";
-      btn.textContent = `${idx + 1}. ${opt}`;
-      btn.onclick = () => this._handleSelection(opt, btn);
+      btn.textContent = `${idx + 1}. ${displayText}`;
+      btn.dataset.match = matchValue;
+      btn.onclick = () => this._handleSelection(matchValue, btn);
       this.optionsContainer.appendChild(btn);
     });
   }
 
-  _handleSelection(selected, btnEl) {
+  _handleSelection(selectedMatch, btnEl) {
     if (this.answered) return;
     this.answered = true;
 
-    const isCorrect = selected === this.currentQ.correct;
-    const allBtns = this.optionsContainer.querySelectorAll(".option-btn");
+    const { direction, targetWord } = this.currentQ;
+    const correctMatch = direction === "jp-es" ? targetWord.meaning : targetWord.kana;
+    const isCorrect = selectedMatch === correctMatch;
 
+    const allBtns = this.optionsContainer.querySelectorAll(".option-btn");
     allBtns.forEach(b => {
       b.disabled = true;
-      if (b.textContent.slice(3) === this.currentQ.correct) {
+      if (b.dataset.match === correctMatch) {
         b.classList.add("correct");
       }
     });
 
     this.audio.playFeedback(isCorrect);
+
+    // Si estábamos en modo inverso, habilitamos el audio para oír cómo suena
+    this.audioBtn.style.display = "inline-flex";
 
     const stats = this.storage.load();
     stats.total++;
@@ -162,7 +202,7 @@ export class QuizModule {
     } else {
       stats.streak = 0;
       btnEl.classList.add("wrong");
-      this.expStatus.innerHTML = `❌ Incorrecto`;
+      this.expStatus.innerHTML = "❌ Incorrecto";
       this.expStatus.style.color = "#f87171";
       this.expBox.className = "explanation-box wrong-exp";
     }
@@ -170,9 +210,9 @@ export class QuizModule {
     this.storage.save(stats);
     this.onStatsUpdate(stats);
 
-    const kanjiText = (this.currentQ.kanji && this.currentQ.kanji !== this.currentQ.jp)
-      ? `<br>Escritura Kanji: <b>${this.currentQ.kanji}</b>.` : "";
-    this.expBody.innerHTML = `<b>${this.currentQ.jp}</b> (${this.currentQ.romaji}) significa: <i>${this.currentQ.correct}</i>.${kanjiText}`;
+    const kanjiPart = (targetWord.kanji && targetWord.kanji !== targetWord.kana)
+      ? `<br>Escritura Kanji: <b>${targetWord.kanji}</b>.` : "";
+    this.expBody.innerHTML = `<b>${targetWord.kana}</b> (${targetWord.romaji}) = <i>${targetWord.meaning}</i>.${kanjiPart}`;
 
     this.expBox.style.display = "block";
     this.nextBtn.style.display = "block";
