@@ -1,16 +1,23 @@
 export class QuizModule {
   constructor(words, storageService, audioService, onStatsUpdate) {
-    this.words = words;
+    this.allWords = words;
+    this.filteredWords = [...words];
     this.storage = storageService;
     this.audio = audioService;
     this.onStatsUpdate = onStatsUpdate;
 
     this.currentQ = null;
     this.answered = false;
+    this.showRomaji = localStorage.getItem("koradevs_show_romaji") !== "false";
 
     // Elementos DOM
     this.wordJpEl = document.getElementById("wordJp");
     this.wordRomajiEl = document.getElementById("wordRomaji");
+    this.romajiWrapper = document.getElementById("romajiWrapper");
+    this.romajiStatus = document.getElementById("romajiStatus");
+    this.btnToggleRomaji = document.getElementById("btnToggleRomaji");
+    this.categorySelect = document.getElementById("categorySelect");
+
     this.optionsContainer = document.getElementById("optionsContainer");
     this.expBox = document.getElementById("explanationBox");
     this.expStatus = document.getElementById("expStatus");
@@ -18,6 +25,7 @@ export class QuizModule {
     this.nextBtn = document.getElementById("nextBtn");
     this.audioBtn = document.getElementById("btnPlayAudio");
 
+    this._updateRomajiUI();
     this._bindEvents();
   }
 
@@ -25,6 +33,24 @@ export class QuizModule {
     this.nextBtn.addEventListener("click", () => this.nextQuestion());
     this.audioBtn.addEventListener("click", () => {
       if (this.currentQ) this.audio.speakJapanese(this.currentQ.jp);
+    });
+
+    // Control de Rōmaji
+    this.btnToggleRomaji.addEventListener("click", () => {
+      this.showRomaji = !this.showRomaji;
+      localStorage.setItem("koradevs_show_romaji", this.showRomaji);
+      this._updateRomajiUI();
+    });
+
+    // Control de Categorías
+    this.categorySelect.addEventListener("change", (e) => {
+      const selected = e.target.value;
+      if (selected === "all") {
+        this.filteredWords = [...this.allWords];
+      } else {
+        this.filteredWords = this.allWords.filter(w => w.cat === selected);
+      }
+      this.nextQuestion();
     });
 
     // Atajos de teclado: 1, 2, 3, 4 y Enter
@@ -42,23 +68,39 @@ export class QuizModule {
     });
   }
 
+  _updateRomajiUI() {
+    if (this.showRomaji) {
+      this.romajiWrapper.classList.remove("hide-romaji");
+      this.romajiStatus.textContent = "ON";
+      this.btnToggleRomaji.classList.remove("off");
+    } else {
+      this.romajiWrapper.classList.add("hide-romaji");
+      this.romajiStatus.textContent = "OFF";
+      this.btnToggleRomaji.classList.add("off");
+    }
+  }
+
   nextQuestion() {
     this.answered = false;
     this.expBox.style.display = "none";
     this.nextBtn.style.display = "none";
     this.optionsContainer.innerHTML = "";
 
-    // 1. Elegir palabra objetivo
-    const target = this.words[Math.floor(Math.random() * this.words.length)];
+    // 1. Elegir palabra objetivo del grupo filtrado
+    const pool = this.filteredWords.length > 0 ? this.filteredWords : this.allWords;
+    const target = pool[Math.floor(Math.random() * pool.length)];
 
-    // 2. Generar distractores inteligentes (priorizando misma categoría)
-    const sameCatWords = this.words.filter(w => w.cat === target.cat && w.meaning !== target.meaning);
-    const otherCatWords = this.words.filter(w => w.cat !== target.cat && w.meaning !== target.meaning);
+    // 2. Generar distractores del banco general
+    const sameCatWords = this.allWords.filter(w => w.cat === target.cat && w.meaning !== target.meaning);
+    const otherCatWords = this.allWords.filter(w => w.cat !== target.cat && w.meaning !== target.meaning);
 
     const distractors = [];
-    const pool = [...sameCatWords.sort(() => Math.random() - 0.5), ...otherCatWords.sort(() => Math.random() - 0.5)];
+    const optionCandidates = [
+      ...sameCatWords.sort(() => Math.random() - 0.5),
+      ...otherCatWords.sort(() => Math.random() - 0.5)
+    ];
 
-    for (const item of pool) {
+    for (const item of optionCandidates) {
       if (!distractors.includes(item.meaning)) {
         distractors.push(item.meaning);
       }
@@ -75,7 +117,7 @@ export class QuizModule {
       options
     };
 
-    // Renderizar
+    // Renderizar en UI
     this.wordJpEl.textContent = this.currentQ.jp;
     this.wordRomajiEl.textContent = this.currentQ.romaji;
 
@@ -102,7 +144,6 @@ export class QuizModule {
       }
     });
 
-    // Feedback visual y de audio
     this.audio.playFeedback(isCorrect);
 
     const stats = this.storage.load();
