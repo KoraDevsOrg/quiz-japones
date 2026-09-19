@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aprende Japonés - KoraDevs</title>
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=2.1" />
 </head>
 <body>
 
-  <!-- BARRA SUPERIOR FIJA (APP BAR) -->
+  <!-- BARRA SUPERIOR FIJA -->
   <header class="app-bar">
-    <button class="btn-drawer-toggle" id="btnOpenDrawer" aria-label="Abrir menú de juegos">
+    <button class="btn-drawer-toggle" id="btnOpenDrawer" aria-label="Abrir menú">
       <span class="bar"></span>
       <span class="bar"></span>
       <span class="bar"></span>
@@ -24,7 +24,7 @@
     </div>
   </header>
 
-  <!-- MENÚ LATERAL RETRÁCTIL (DRAWER) -->
+  <!-- MENÚ LATERAL RETRÁCTIL -->
   <div class="drawer-backdrop" id="drawerBackdrop"></div>
 
   <aside class="side-drawer" id="sideDrawer" aria-hidden="true">
@@ -79,7 +79,14 @@
           <span class="drawer-sub">Desafío rápido de velocidad</span>
         </div>
       </button>
-      
+
+      <button class="drawer-item" data-target="achievements">
+        <span class="drawer-icon">🏅</span>
+        <div class="drawer-info">
+          <span class="drawer-label">Medallas y Logros</span>
+          <span class="drawer-sub">Tus metas conseguidas</span>
+        </div>
+      </button>
     </nav>
 
     <div class="drawer-footer">
@@ -87,7 +94,16 @@
     </div>
   </aside>
 
-  <!-- BARRA DE ESTADÍSTICAS PERSISTENTES -->
+  <!-- TOAST FLOTANTE DE LOGRO DESBLOQUEADO -->
+  <div class="achievement-toast" id="achievementToast" aria-live="assertive">
+    <span class="toast-icon" id="toastIcon">🏅</span>
+    <div class="toast-content">
+      <div class="toast-tag">¡LOGRO DESBLOQUEADO!</div>
+      <div class="toast-title" id="toastTitle">Nombre del Logro</div>
+    </div>
+  </div>
+
+  <!-- BARRA DE ESTADÍSTICAS -->
   <section class="stats-bar" aria-label="Estadísticas de aprendizaje">
     <div class="stat-item">Aciertos: <span id="scoreText">0</span></div>
     <div class="stat-item">Racha: <span id="streakText">0 🔥</span></div>
@@ -161,7 +177,7 @@
     <!-- MÓDULO 2: SOPA DE LETRAS -->
     <section class="wordsearch-card module-section" id="wsSection" style="display: none;">
       <h3>🔍 Sopa de letras (Hiragana)</h3>
-      <p class="section-desc">Selecciona las sílabas en orden (horizontal o vertical) para formar las palabras.</p>
+      <p class="section-desc">Selecciona las sílabas en orden para formar las palabras.</p>
 
       <div class="grid-container" id="wsGrid"></div>
 
@@ -190,7 +206,7 @@
       </button>
     </section>
 
-    <!-- MÓDULO 4: REORDENAR SÍLABAS (ANAGRAMA) -->
+    <!-- MÓDULO 4: REORDENAR SÍLABAS -->
     <section class="scramble-section module-section" id="scrambleSection" style="display: none;">
       <div class="scramble-header">
         <div>
@@ -216,9 +232,8 @@
       </div>
     </section>
 
-    <!-- MÓDULO 5: MODO CONTRARRELOJ (TIME ATTACK) -->
+    <!-- MÓDULO 5: CONTRARRELOJ -->
     <section class="timeattack-section module-section" id="timeAttackSection" style="display: none;">
-      <!-- Pantalla de Inicio / Lobby -->
       <div id="taLobby" class="ta-card">
         <div class="ta-icon-hero">⏱️</div>
         <h3>Desafío Contrarreloj</h3>
@@ -233,7 +248,6 @@
         </button>
       </div>
 
-      <!-- Pantalla de Juego Activo -->
       <div id="taGame" class="ta-card" style="display: none;">
         <div class="ta-top-hud">
           <div class="ta-timer-badge">⏳ <span id="taSeconds">60</span>s</div>
@@ -252,7 +266,6 @@
         <div class="ta-options-grid" id="taOptions"></div>
       </div>
 
-      <!-- Pantalla de Resumen Final -->
       <div id="taSummary" class="ta-card" style="display: none;">
         <div class="ta-icon-hero" id="taResultIcon">🎉</div>
         <h3 id="taResultTitle">¡Tiempo Agotado!</h3>
@@ -278,9 +291,25 @@
         </div>
       </div>
     </section>
-    
+
+    <!-- MÓDULO 6: MEDALLAS Y LOGROS -->
+    <section class="achievements-section module-section" id="achievementsSection" style="display: none;">
+      <div class="achievements-card">
+        <div class="achievements-header">
+          <div>
+            <h3>🏅 Vitrina de Medallas</h3>
+            <p class="section-desc">Cumple retos en los diferentes juegos para coleccionarlas.</p>
+          </div>
+          <div class="achievements-progress-badge">
+            <span id="unlockedBadgesCount">0 / 8</span>
+          </div>
+        </div>
+
+        <div class="badges-grid" id="achievementsGrid"></div>
+      </div>
+    </section>
   </main>
 
-  <script type="module" src="js/app.js?v=2.0"></script>
+  <script type="module" src="js/app.js?v=2.1"></script>
 </body>
 </html>
