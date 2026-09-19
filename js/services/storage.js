@@ -1,6 +1,7 @@
 const STORAGE_KEY = "koradevs_nihongo_stats_v1";
 const MISTAKES_KEY = "koradevs_nihongo_mistakes_v1";
 const TIMEATTACK_KEY = "koradevs_nihongo_timeattack_best_v1";
+const ACHIEVEMENTS_KEY = "koradevs_nihongo_achievements_v1";
 
 const DEFAULT_STATE = {
   score: 0,
@@ -33,6 +34,7 @@ export class StorageService {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(MISTAKES_KEY);
       localStorage.removeItem(TIMEATTACK_KEY);
+      localStorage.removeItem(ACHIEVEMENTS_KEY);
     } catch (err) {
       console.warn("Error al reiniciar:", err);
     }
@@ -73,7 +75,7 @@ export class StorageService {
     }
   }
 
-  // Récord Contrarreloj (Time Attack)
+  // Récord Contrarreloj
   static getTimeAttackBest() {
     try {
       return parseInt(localStorage.getItem(TIMEATTACK_KEY), 10) || 0;
@@ -87,9 +89,33 @@ export class StorageService {
       const current = this.getTimeAttackBest();
       if (score > current) {
         localStorage.setItem(TIMEATTACK_KEY, score.toString());
-        return true; // Nuevo récord alcanzado
+        return true;
       }
       return false;
+    } catch {
+      return false;
+    }
+  }
+
+  // Logros y Medallas
+  static getUnlockedAchievements() {
+    try {
+      const data = localStorage.getItem(ACHIEVEMENTS_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  static unlockAchievement(id) {
+    try {
+      const list = this.getUnlockedAchievements();
+      if (!list.includes(id)) {
+        list.push(id);
+        localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(list));
+        return true; // Recién desbloqueado
+      }
+      return false; // Ya estaba desbloqueado
     } catch {
       return false;
     }
