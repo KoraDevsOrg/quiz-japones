@@ -4,7 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aprende Japonés - KoraDevs</title>
-  <link rel="stylesheet" href="css/styles.css?v=2.1" />
+  
+  <!-- Soporte PWA y Móvil -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f1115" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  
+  <link rel="stylesheet" href="css/styles.css?v=2.2" />
 </head>
 <body>
 
@@ -94,7 +101,7 @@
     </div>
   </aside>
 
-  <!-- TOAST FLOTANTE DE LOGRO DESBLOQUEADO -->
+  <!-- TOAST FLOTANTE DE LOGRO -->
   <div class="achievement-toast" id="achievementToast" aria-live="assertive">
     <span class="toast-icon" id="toastIcon">🏅</span>
     <div class="toast-content">
@@ -310,6 +317,25 @@
     </section>
   </main>
 
-  <script type="module" src="js/app.js?v=2.1"></script>
+  <!-- BOTÓN FLOTANTE (FAB): TABLA HIRAGANA -->
+  <button class="fab-hiragana" id="btnOpenHiraganaModal" title="Ver silabario Hiragana">
+    あ
+  </button>
+
+  <!-- MODAL: SILABARIO HIRAGANA INTERACTIVO -->
+  <div class="modal-backdrop" id="hiraganaModalBackdrop"></div>
+  <div class="hiragana-modal" id="hiraganaModal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <h3>🗾 Silabario Hiragana</h3>
+        <p>Toca cualquier letra para escuchar su pronunciación</p>
+      </div>
+      <button class="btn-modal-close" id="btnCloseHiraganaModal">✕</button>
+    </div>
+    <div class="hiragana-grid" id="hiraganaGrid"></div>
+  </div>
+
+  <script type="module" src="js/app.js?v=2.2"></script>
 </body>
 </html>
+            
