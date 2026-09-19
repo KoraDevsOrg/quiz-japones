@@ -1,0 +1,18 @@
+{
+  "name": "Kora Nihongo - Aprende Japonés",
+  "short_name": "KoraNihongo",
+  "description": "Retos, cuestionarios y juegos interactivos para dominar el vocabulario japonés JLPT N5.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://api.iconify.design/twemoji:shinto-shrine.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
