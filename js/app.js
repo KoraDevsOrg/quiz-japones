@@ -22,22 +22,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (vocabCount) vocabCount.textContent = `${WORDS_DATA.length} 📚`;
 
-  // Inicializar Módulo de Logros
+  // Módulo de Logros
   const achievements = new AchievementsModule(StorageService, audioService);
 
-  // Verificador de logros al responder
   function handleStatsUpdate(stats) {
     if (scoreText) scoreText.textContent = stats.score;
     if (streakText) streakText.textContent = `${stats.streak} 🔥`;
     if (headerStreakText) headerStreakText.textContent = `${stats.streak} 🔥`;
     if (bestStreakText) bestStreakText.textContent = `${stats.bestStreak} 🏆`;
 
-    // Evaluar logros de cuestionario
     if (stats.score >= 1) achievements.triggerUnlock("first_step");
     if (stats.streak >= 10) achievements.triggerUnlock("streak_10");
     if (stats.score >= 100) achievements.triggerUnlock("centurion");
 
-    // Búho nocturno (después de las 8 PM)
     const currentHour = new Date().getHours();
     if (currentHour >= 20 || currentHour < 5) {
       achievements.triggerUnlock("night_owl");
@@ -63,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const scramble = new ScrambleModule(WORDS_DATA, audioService);
   const timeAttack = new TimeAttackModule(WORDS_DATA, StorageService, audioService);
 
-  // Enganches (hooks) para logros de otros minijuegos
+  // Hooks para logros
   const originalEndGame = timeAttack._endGame.bind(timeAttack);
   timeAttack._endGame = function () {
     originalEndGame();
@@ -84,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (this.streak >= 5) achievements.triggerUnlock("scramble_master");
   };
 
-  // Logro de Sopa de Letras
   const originalHandleCellClick = wordSearch._handleCellClick.bind(wordSearch);
   wordSearch._handleCellClick = function (cell) {
     originalHandleCellClick(cell);
@@ -179,4 +175,67 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   quiz.nextQuestion();
+
+  // ==========================================
+  // SILABARIO HIRAGANA INTERACTIVO (Gojūon)
+  // ==========================================
+  const hiraganaTable = [
+    { k: "あ", r: "a" },  { k: "い", r: "i" },   { k: "う", r: "u" },   { k: "え", r: "e" },  { k: "お", r: "o" },
+    { k: "か", r: "ka" }, { k: "き", r: "ki" },  { k: "く", r: "ku" },  { k: "け", r: "ke" }, { k: "こ", r: "ko" },
+    { k: "さ", r: "sa" }, { k: "し", r: "shi" }, { k: "す", r: "su" },  { k: "せ", r: "se" }, { k: "そ", r: "so" },
+    { k: "た", r: "ta" }, { k: "ち", r: "chi" }, { k: "つ", r: "tsu" }, { k: "て", r: "te" }, { k: "と", r: "to" },
+    { k: "な", r: "na" }, { k: "に", r: "ni" },  { k: "ぬ", r: "nu" },  { k: "ね", r: "ne" }, { k: "の", r: "no" },
+    { k: "は", r: "ha" }, { k: "ひ", r: "hi" },  { k: "ふ", r: "fu" },  { k: "へ", r: "he" }, { k: "ほ", r: "ho" },
+    { k: "ま", r: "ma" }, { k: "み", r: "mi" },  { k: "む", r: "mu" },  { k: "め", r: "me" }, { k: "も", r: "mo" },
+    { k: "や", r: "ya" }, { k: "", r: "" },      { k: "ゆ", r: "yu" },  { k: "", r: "" },     { k: "よ", r: "yo" },
+    { k: "ら", r: "ra" }, { k: "り", r: "ri" },  { k: "る", r: "ru" },  { k: "れ", r: "re" }, { k: "ろ", r: "ro" },
+    { k: "わ", r: "wa" }, { k: "", r: "" },      { k: "を", r: "wo" },  { k: "", r: "" },     { k: "ん", r: "n" }
+  ];
+
+  const hiraganaGrid = document.getElementById("hiraganaGrid");
+  const hiraganaModal = document.getElementById("hiraganaModal");
+  const hiraganaBackdrop = document.getElementById("hiraganaModalBackdrop");
+  const btnOpenHiragana = document.getElementById("btnOpenHiraganaModal");
+  const btnCloseHiragana = document.getElementById("btnCloseHiraganaModal");
+
+  if (hiraganaGrid) {
+    hiraganaTable.forEach(item => {
+      const card = document.createElement("div");
+      if (!item.k) {
+        card.className = "kana-card empty";
+      } else {
+        card.className = "kana-card";
+        card.innerHTML = `<span class="kana-char">${item.k}</span><span class="kana-romaji">${item.r}</span>`;
+        card.addEventListener("click", () => {
+          audioService.speakJapanese(item.k);
+        });
+      }
+      hiraganaGrid.appendChild(card);
+    });
+  }
+
+  function openHiraganaModal() {
+    if (!hiraganaModal || !hiraganaBackdrop) return;
+    hiraganaModal.classList.add("show");
+    hiraganaBackdrop.classList.add("show");
+  }
+
+  function closeHiraganaModal() {
+    if (!hiraganaModal || !hiraganaBackdrop) return;
+    hiraganaModal.classList.remove("show");
+    hiraganaBackdrop.classList.remove("show");
+  }
+
+  if (btnOpenHiragana) btnOpenHiragana.addEventListener("click", openHiraganaModal);
+  if (btnCloseHiragana) btnCloseHiragana.addEventListener("click", closeHiraganaModal);
+  if (hiraganaBackdrop) hiraganaBackdrop.addEventListener("click", closeHiraganaModal);
+
+  // ==========================================
+  // REGISTRO DE SERVICE WORKER (PWA)
+  // ==========================================
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(err => {
+      console.warn("Fallo al registrar Service Worker:", err);
+    });
+  }
 });
