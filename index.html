@@ -71,6 +71,15 @@
           <span class="drawer-sub">Ordena las sílabas</span>
         </div>
       </button>
+
+      <button class="drawer-item" data-target="timeattack">
+        <span class="drawer-icon">⏱️</span>
+        <div class="drawer-info">
+          <span class="drawer-label">Contrarreloj (60s)</span>
+          <span class="drawer-sub">Desafío rápido de velocidad</span>
+        </div>
+      </button>
+      
     </nav>
 
     <div class="drawer-footer">
@@ -206,6 +215,70 @@
         </div>
       </div>
     </section>
+
+    <!-- MÓDULO 5: MODO CONTRARRELOJ (TIME ATTACK) -->
+    <section class="timeattack-section module-section" id="timeAttackSection" style="display: none;">
+      <!-- Pantalla de Inicio / Lobby -->
+      <div id="taLobby" class="ta-card">
+        <div class="ta-icon-hero">⏱️</div>
+        <h3>Desafío Contrarreloj</h3>
+        <p class="section-desc">¿Cuántas palabras puedes acertar en 60 segundos? Responde rápido sin fallar.</p>
+        
+        <div class="ta-best-badge">
+          Récord personal: <span id="taBestScoreText">0</span> aciertos 🏆
+        </div>
+
+        <button class="action-btn" id="btnTaStart" style="margin-top: 20px;">
+          🚀 ¡Iniciar Desafío (60s)!
+        </button>
+      </div>
+
+      <!-- Pantalla de Juego Activo -->
+      <div id="taGame" class="ta-card" style="display: none;">
+        <div class="ta-top-hud">
+          <div class="ta-timer-badge">⏳ <span id="taSeconds">60</span>s</div>
+          <div class="ta-score-badge">Puntos: <span id="taCurrentScore">0</span></div>
+        </div>
+
+        <div class="ta-progress-track">
+          <div class="ta-progress-fill" id="taProgressFill"></div>
+        </div>
+
+        <div class="ta-question-box">
+          <div class="ta-word-jp" id="taWordJp">...</div>
+          <div class="ta-word-romaji" id="taWordRomaji">...</div>
+        </div>
+
+        <div class="ta-options-grid" id="taOptions"></div>
+      </div>
+
+      <!-- Pantalla de Resumen Final -->
+      <div id="taSummary" class="ta-card" style="display: none;">
+        <div class="ta-icon-hero" id="taResultIcon">🎉</div>
+        <h3 id="taResultTitle">¡Tiempo Agotado!</h3>
+        <p id="taNewRecordMsg" class="ta-record-alert" style="display: none;">🏆 ¡NUEVO RÉCORD PERSONAL!</p>
+
+        <div class="ta-summary-stats">
+          <div class="ta-stat-box">
+            <span class="ta-stat-num" id="taFinalScore">0</span>
+            <span class="ta-stat-lbl">Aciertos</span>
+          </div>
+          <div class="ta-stat-box">
+            <span class="ta-stat-num" id="taFinalMistakes">0</span>
+            <span class="ta-stat-lbl">Errores</span>
+          </div>
+          <div class="ta-stat-box">
+            <span class="ta-stat-num" id="taFinalAccuracy">0%</span>
+            <span class="ta-stat-lbl">Precisión</span>
+          </div>
+        </div>
+
+        <div class="ta-actions-row">
+          <button class="action-btn" id="btnTaRetry">🔄 Jugar de nuevo</button>
+        </div>
+      </div>
+    </section>
+    
   </main>
 
   <script type="module" src="js/app.js"></script>
