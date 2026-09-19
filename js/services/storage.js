@@ -1,5 +1,6 @@
 const STORAGE_KEY = "koradevs_nihongo_stats_v1";
 const MISTAKES_KEY = "koradevs_nihongo_mistakes_v1";
+const TIMEATTACK_KEY = "koradevs_nihongo_timeattack_best_v1";
 
 const DEFAULT_STATE = {
   score: 0,
@@ -9,7 +10,7 @@ const DEFAULT_STATE = {
 };
 
 export class StorageService {
-  // --- Estadísticas Generales ---
+  // Estadísticas del Quiz
   static load() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
@@ -23,7 +24,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (err) {
-      console.warn("No se pudo guardar el estado en localStorage:", err);
+      console.warn("No se pudo guardar en storage:", err);
     }
   }
 
@@ -31,13 +32,14 @@ export class StorageService {
     try {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(MISTAKES_KEY);
+      localStorage.removeItem(TIMEATTACK_KEY);
     } catch (err) {
-      console.warn("Error al reiniciar storage:", err);
+      console.warn("Error al reiniciar:", err);
     }
     return { ...DEFAULT_STATE };
   }
 
-  // --- Gestión de Errores (Repetición Espaciada) ---
+  // Repaso de Errores
   static getMistakes() {
     try {
       const data = localStorage.getItem(MISTAKES_KEY);
@@ -56,7 +58,6 @@ export class StorageService {
       }
       return list;
     } catch (err) {
-      console.warn("Error guardando fallo:", err);
       return [];
     }
   }
@@ -68,8 +69,29 @@ export class StorageService {
       localStorage.setItem(MISTAKES_KEY, JSON.stringify(list));
       return list;
     } catch (err) {
-      console.warn("Error eliminando fallo:", err);
       return [];
+    }
+  }
+
+  // Récord Contrarreloj (Time Attack)
+  static getTimeAttackBest() {
+    try {
+      return parseInt(localStorage.getItem(TIMEATTACK_KEY), 10) || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  static setTimeAttackBest(score) {
+    try {
+      const current = this.getTimeAttackBest();
+      if (score > current) {
+        localStorage.setItem(TIMEATTACK_KEY, score.toString());
+        return true; // Nuevo récord alcanzado
+      }
+      return false;
+    } catch {
+      return false;
     }
   }
 }
