@@ -14,6 +14,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const audioService = new AudioService();
   const initialStats = StorageService.load();
 
+  // Desbloqueo de Audio para WebView Android
+  const unlockAudio = () => {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.resume();
+    }
+  };
+  document.body.addEventListener("click", unlockAudio, { once: true });
+  document.body.addEventListener("touchstart", unlockAudio, { once: true });
+
   const scoreText = document.getElementById("scoreText");
   const streakText = document.getElementById("streakText");
   const headerStreakText = document.getElementById("headerStreakText");
@@ -23,25 +32,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   const currentSectionTitle = document.getElementById("currentSectionTitle");
 
   // ========================================================
-  // PERSISTENCIA DOBLE EN KORA ADMIN DB (PALABRAS Y FRASES)
+  // PERSISTENCIA FORZADA Y LIMPIEZA EN KORA ADMIN DB
   // ========================================================
   let activeWords = [...WORDS_DATA];
   let activePhrases = [...PHRASES_DATA];
 
   if (typeof window.KoraDB !== "undefined") {
     try {
-      // 1. MIGRACIÓN: Limpiar residuos de la consola web si existe el esquema viejo
-      const tableInfoRaw = window.KoraDB.query("PRAGMA table_info(mod_jp_palabras);");
-      const tableInfo = JSON.parse(tableInfoRaw || "[]");
-      const hasOldSchema = tableInfo.some(col => col.name === "significado");
-
-      if (hasOldSchema) {
-        console.warn("[Kora] Purgando tabla de prueba con esquema antiguo...");
-        window.KoraDB.execute("DROP TABLE IF EXISTS mod_jp_palabras;");
-        localStorage.removeItem("kora_ver_org.koradevs.quiz.japon");
+      // 1. Validar conteo actual en SQLite
+      const countCheck = window.KoraDB.query("SELECT COUNT(*) AS total FROM mod_jp_palabras;", "[]");
+      let currentTotal = 0;
+      try {
+        const parsed = JSON.parse(countCheck);
+        currentTotal = parsed.length > 0 ? Number(parsed[0].total) : 0;
+      } catch (e) {
+        currentTotal = 0;
       }
 
-      // 2. CREAR TABLA PARA PALABRAS (VOCABULARIO)
+      // Si tiene los 44 registros de prueba o está desactualizada, purgar de raíz
+      if (currentTotal === 44 || currentTotal < WORDS_DATA.length) {
+        console.log("[KoraDB] Purgando tabla antigua con registros residuales...");
+        window.KoraDB.execute("DROP TABLE IF EXISTS mod_jp_palabras;", "[]");
+      }
+
+      // 2. Recrear tabla de palabras con esquema estándar
       const ddlPalabras = `
         CREATE TABLE IF NOT EXISTS mod_jp_palabras (
           id TEXT PRIMARY KEY,
@@ -52,14 +66,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           cat TEXT
         );
       `;
-      window.KoraDB.registerModule(
-        "org.koradevs.quiz.japon",
-        "Kora Quiz Japonés",
-        2,
-        ddlPalabras
-      );
+      window.KoraDB.execute(ddlPalabras, "[]");
 
-      // 3. CREAR TABLA PARA FRASES Y CHUNKS SITUACIONALES
+      // 3. Recrear tabla de frases situacionales
       const ddlFrases = `
         CREATE TABLE IF NOT EXISTS mod_jp_frases (
           id TEXT PRIMARY KEY,
@@ -74,11 +83,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
       window.KoraDB.execute(ddlFrases, "[]");
 
-      // 4. SINCRONIZAR PALABRAS (WORDS_DATA)
-      const countPalabrasRaw = window.KoraDB.query("SELECT COUNT(*) AS total FROM mod_jp_palabras;");
-      const localWordsCount = Number(JSON.parse(countPalabrasRaw)[0]?.total || 0);
+      // 4. Volcar las 130 palabras limpias si la tabla quedó en 0
+      const postCheck = JSON.parse(window.KoraDB.query("SELECT COUNT(*) AS total FROM mod_jp_palabras;", "[]"));
+      const finalWordsCount = postCheck.length > 0 ? Number(postCheck[0].total) : 0;
 
-      if (localWordsCount === 0 || localWordsCount < WORDS_DATA.length) {
+      if (finalWordsCount === 0) {
         WORDS_DATA.forEach(item => {
           const sql = `
             INSERT OR REPLACE INTO mod_jp_palabras (id, kana, romaji, kanji, meaning, cat)
@@ -94,14 +103,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             item.cat || ""
           ]));
         });
-        console.log(`[KoraDB] ${WORDS_DATA.length} palabras guardadas en SQLite.`);
       }
 
-      // 5. SINCRONIZAR FRASES (PHRASES_DATA)
-      const countFrasesRaw = window.KoraDB.query("SELECT COUNT(*) AS total FROM mod_jp_frases;");
-      const localPhrasesCount = Number(JSON.parse(countFrasesRaw)[0]?.total || 0);
-
-      if (localPhrasesCount === 0 || localPhrasesCount < PHRASES_DATA.length) {
+      // 5. Volcar frases
+      const postPhrases = JSON.parse(window.KoraDB.query("SELECT COUNT(*) AS total FROM mod_jp_frases;", "[]"));
+      if (postPhrases.length === 0 || Number(postPhrases[0].total) === 0) {
         PHRASES_DATA.forEach(p => {
           const sql = `
             INSERT OR REPLACE INTO mod_jp_frases (id, situation, jp, kana, romaji, meaning, pattern, pitch)
@@ -118,22 +124,20 @@ document.addEventListener("DOMContentLoaded", async () => {
             p.pitch || ""
           ]));
         });
-        console.log(`[KoraDB] ${PHRASES_DATA.length} frases guardadas en SQLite.`);
       }
 
-      // 6. CARGAR DATOS ACTIVOS DESDE SQLITE
-      const dbWords = JSON.parse(window.KoraDB.query("SELECT * FROM mod_jp_palabras;"));
+      // 6. Leer los datos garantizados desde SQLite
+      const dbWords = JSON.parse(window.KoraDB.query("SELECT * FROM mod_jp_palabras;", "[]"));
       if (dbWords && dbWords.length > 0) activeWords = dbWords;
 
-      const dbPhrases = JSON.parse(window.KoraDB.query("SELECT * FROM mod_jp_frases;"));
+      const dbPhrases = JSON.parse(window.KoraDB.query("SELECT * FROM mod_jp_frases;", "[]"));
       if (dbPhrases && dbPhrases.length > 0) activePhrases = dbPhrases;
 
     } catch (err) {
-      console.error("[KoraDB] Error en inicialización de tablas:", err);
+      console.error("[KoraDB] Error en inicialización:", err);
     }
   }
 
-  // Actualizar contador visual
   if (vocabCount) vocabCount.textContent = `${activeWords.length} 📚`;
 
   // Módulo de Logros
@@ -151,9 +155,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (stats.score >= 100) achievements.triggerUnlock("centurion");
 
     const currentHour = new Date().getHours();
-    if (currentHour >= 20 || currentHour < 5) {
-      achievements.triggerUnlock("night_owl");
-    }
+    if (currentHour >= 20 || currentHour < 5) achievements.triggerUnlock("night_owl");
   }
 
   handleStatsUpdate(initialStats);
@@ -168,7 +170,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Inicializar minijuegos con las 130 palabras limpias
+  // Inicializar módulos de juego
   const quiz = new QuizModule(activeWords, StorageService, audioService, handleStatsUpdate);
   const wordSearch = new WordSearchModule(activeWords, audioService);
   const memory = new MemoryModule(activeWords, audioService);
@@ -217,6 +219,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnSpkPrev = document.getElementById("btnSpkPrev");
   const btnSpkNext = document.getElementById("btnSpkNext");
 
+  function safeSpeak(text) {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.resume();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "ja-JP";
+      utter.rate = 0.9;
+      window.speechSynthesis.speak(utter);
+    }
+  }
+
   function renderSpeakingPhrase() {
     const item = activePhrases[currentPhraseIdx];
     if (!item || !spkJp) return;
@@ -230,12 +243,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (btnSpkListen) {
     btnSpkListen.addEventListener("click", () => {
-      audioService.speakJapanese(activePhrases[currentPhraseIdx].jp);
+      safeSpeak(activePhrases[currentPhraseIdx].jp);
     });
   }
 
   if (btnSpkMic) {
     btnSpkMic.addEventListener("click", () => {
+      if (!speaking.hasSpeech) {
+        spkFeedback.style.color = "#f59e0b";
+        spkFeedback.textContent = "El visor local no tiene micrófono nativo activado. Abre la web en Chrome para dictar por voz.";
+        safeSpeak(activePhrases[currentPhraseIdx].jp);
+        return;
+      }
+
       speaking.startListening(activePhrases[currentPhraseIdx], (res) => {
         if (res.status === "listening") {
           spkFeedback.style.color = "#38bdf8";
@@ -290,7 +310,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Navegación de Vistas
+  // Menú y Navegación
   const views = {
     quiz: {
       title: "Cuestionario",
@@ -397,7 +417,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     { k: "か", r: "ka" }, { k: "き", r: "ki" },  { k: "く", r: "ku" },  { k: "け", r: "ke" }, { k: "こ", r: "ko" },
     { k: "さ", r: "sa" }, { k: "し", r: "shi" }, { k: "す", r: "su" },  { k: "せ", r: "se" }, { k: "そ", r: "so" },
     { k: "た", r: "ta" }, { k: "ち", r: "chi" }, { k: "つ", r: "tsu" }, { k: "て", r: "te" }, { k: "と", r: "to" },
-    { k: "な", r: "na" }, { k: "に", r: "ni" },  { k: "ぬ", r: "nu" },  { k: "ね", r: "ne" }, { k: "の", r: "no" },
+    { k: "な", r: "na" }, { k: "ni", r: "ni" },  { k: "ぬ", r: "nu" },  { k: "ね", r: "ne" }, { k: "の", r: "no" },
     { k: "は", r: "ha" }, { k: "ひ", r: "hi" },  { k: "ふ", r: "fu" },  { k: "へ", r: "he" }, { k: "ほ", r: "ho" },
     { k: "ま", r: "ma" }, { k: "み", r: "mi" },  { k: "む", r: "mu" },  { k: "め", r: "me" }, { k: "も", r: "mo" },
     { k: "や", r: "ya" }, { k: "", r: "" },      { k: "ゆ", r: "yu" },  { k: "", r: "" },     { k: "よ", r: "yo" },
@@ -419,7 +439,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       } else {
         card.className = "kana-card";
         card.innerHTML = `<span class="kana-char">${item.k}</span><span class="kana-romaji">${item.r}</span>`;
-        card.addEventListener("click", () => audioService.speakJapanese(item.k));
+        card.addEventListener("click", () => safeSpeak(item.k));
       }
       hiraganaGrid.appendChild(card);
     });
@@ -440,10 +460,4 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (btnOpenHiragana) btnOpenHiragana.addEventListener("click", openHiraganaModal);
   if (btnCloseHiragana) btnCloseHiragana.addEventListener("click", closeHiraganaModal);
   if (hiraganaBackdrop) hiraganaBackdrop.addEventListener("click", closeHiraganaModal);
-
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js").catch(err => {
-      console.warn("Fallo SW:", err);
-    });
-  }
 });
