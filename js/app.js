@@ -8,7 +8,7 @@ import { ScrambleModule } from "./modules/scramble.js";
 import { TimeAttackModule } from "./modules/timeattack.js";
 import { AchievementsModule } from "./modules/achievements.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const audioService = new AudioService();
   const initialStats = StorageService.load();
 
@@ -20,7 +20,61 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnResetStats = document.getElementById("btnResetStats");
   const currentSectionTitle = document.getElementById("currentSectionTitle");
 
-  if (vocabCount) vocabCount.textContent = `${WORDS_DATA.length} 📚`;
+  // ==========================================
+  // PERSISTENCIA Y SINCRONIZACIÓN KORA ADMIN DB
+  // ==========================================
+  let activeWords = [...WORDS_DATA];
+
+  if (typeof window.KoraSyncEngine !== "undefined") {
+    const engine = new window.KoraSyncEngine({
+      pkgName: "org.koradevs.quiz.japon",
+      appName: "Kora Quiz Japonés",
+      tableName: "mod_jp_palabras",
+      currentHtmlVersion: "1.0.0",
+      tableDdl: `
+        CREATE TABLE IF NOT EXISTS mod_jp_palabras (
+          id TEXT PRIMARY KEY,
+          kana TEXT,
+          romaji TEXT,
+          kanji TEXT,
+          meaning TEXT,
+          cat TEXT
+        );
+      `,
+      insertHandler: (db, item) => {
+        const sql = `
+          INSERT OR REPLACE INTO mod_jp_palabras (id, kana, romaji, kanji, meaning, cat)
+          VALUES (?, ?, ?, ?, ?, ?);
+        `;
+        const id = `${item.kana}_${item.romaji}`;
+        db.execute(sql, JSON.stringify([
+          id,
+          item.kana || "",
+          item.romaji || "",
+          item.kanji || "",
+          item.meaning || "",
+          item.cat || ""
+        ]));
+      }
+    });
+
+    // Sincronización resiliente (Offline-First)
+    await engine.sync(WORDS_DATA, {
+      onStatus: (msg) => console.log("[KoraSync]:", msg),
+      onPrompt: (promptMsg) => window.confirm(promptMsg)
+    });
+
+    // Si corre dentro del visor Kora Admin DB, alimentamos los juegos con SQLite
+    if (engine.hasBridge) {
+      const dbWords = engine.getAll();
+      if (dbWords && dbWords.length > 0) {
+        activeWords = dbWords;
+      }
+    }
+  }
+
+  // Reflejar la cantidad real de vocabulario activo
+  if (vocabCount) vocabCount.textContent = `${activeWords.length} 📚`;
 
   // Módulo de Logros
   const achievements = new AchievementsModule(StorageService, audioService);
@@ -53,12 +107,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Inicializar módulos
-  const quiz = new QuizModule(WORDS_DATA, StorageService, audioService, handleStatsUpdate);
-  const wordSearch = new WordSearchModule(WORDS_DATA, audioService);
-  const memory = new MemoryModule(WORDS_DATA, audioService);
-  const scramble = new ScrambleModule(WORDS_DATA, audioService);
-  const timeAttack = new TimeAttackModule(WORDS_DATA, StorageService, audioService);
+  // Inicializar módulos con el vocabulario activo (SQLite o local)
+  const quiz = new QuizModule(activeWords, StorageService, audioService, handleStatsUpdate);
+  const wordSearch = new WordSearchModule(activeWords, audioService);
+  const memory = new MemoryModule(activeWords, audioService);
+  const scramble = new ScrambleModule(activeWords, audioService);
+  const timeAttack = new TimeAttackModule(activeWords, StorageService, audioService);
 
   // Hooks para logros
   const originalEndGame = timeAttack._endGame.bind(timeAttack);
