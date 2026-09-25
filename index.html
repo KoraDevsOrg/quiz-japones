@@ -391,7 +391,18 @@
     <div class="hiragana-grid" id="hiraganaGrid"></div>
   </div>
 
-  <script type="module" src="js/app.js?v=2.2"></script>
+  <!-- Forzar purga de caché en Visores Web Android -->
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+      for (let reg of registrations) {
+        reg.unregister();
+      }
+    });
+  }
+</script>
+<script type="module" src="./js/app.js?v=3.0.0"></script>
+
 </body>
 </html>
             
